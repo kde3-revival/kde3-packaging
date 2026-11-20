@@ -153,22 +153,44 @@ luată de proprietar, nu doar propunere, cu excepția celor marcate „propunere
 3. Prima sesiune reală pe mașina fizică (vezi 6): GDM 51 pe Arch încă pornește
    sesiuni X11 (`gdm-x-session`) dacă `xorg-server` e instalat; altfel LightDM
    sau `startx /opt/kde3/bin/startkde` din TTY.
-4. Claritatea textului, independent de HarfBuzz (kdebase): hint implicit
+4. KMail: indexurile maildir corupte după cădere de tensiune/crash (analiză
+   2026-11-21, kdepim, nereprodus încă). Întâi reparăm sistemul actual; doar
+   dacă tot avem probleme trecem la SQLite (vezi 7.4). Câte un commit:
+   - `kmmsgdict.cpp` `appendToFolderIds()`: offset-ul cu `sizeof(ulong)` (8 pe
+     x86_64) în loc de `sizeof(Q_UINT32)`; în plus `count` e folosit după
+     re-swap. Strică `.index.ids` la fiecare mesaj nou; `updateIndex()` doar
+     îl atinge (`utime`) dacă folderul nu e dirty, deci rămâne stricat;
+   - `readIndex()`/`getStringPart()`: nicio verificare
+     `offset+len <= dimensiunea fișierului` (`fseek` trece de EOF, `mmap`
+     citit în afara limitei → SIGBUS/mesaje fantomă) → reconstruire automată
+     din maildir în loc de crash;
+   - indexul e validat doar după mtime, iar `updateIndexStreamPtr()` face
+     `utime` pe folder/index/ids → index nesincronizat pare proaspăt;
+     propunere: antet cu flag curat/murdar (murdar înainte de prima scriere
+     pe loc, curat după `fsync` la închidere);
+   - scrierile pe loc (`syncIndexString`, adăugarea în `addMsg`) fără
+     `fsync`; `writeIndex()` ignoră rezultatul `rename` și nu face `fsync`
+     pe director;
+   - `mmap`-ul nu e refăcut după adăugarea de mesaje (de verificat la
+     rulare).
+   Test: `kill -9` în timpul adăugării de mesaje, indexuri trunchiate/umplute
+   cu zerouri; pe harness, tăiere de curent într-un VM.
+5. Claritatea textului, independent de HarfBuzz (kdebase): hint implicit
    „slight” (`kcontrol/fonts/fonts.cpp`, `krdb.cpp`), export `Xft.lcdfilter`,
    KXftConfig să scrie în `$XDG_CONFIG_HOME/fontconfig/fonts.conf`, nu în
    `~/.fonts.conf`.
-5. `ksmserver/main.cpp`: verificarea de pornire caută încă doar
+6. `ksmserver/main.cpp`: verificarea de pornire caută încă doar
    `~/.ICEauthority`; documentația la fel.
-6. Audit de securitate:
+7. Audit de securitate:
    - `setgroups()` lipsește înaintea `setuid()` în start_kdeinit, drkonqi,
      ksysguardd, konsole, kdm_greet;
    - kio setează lista proprie de cifruri TLS (ocolește politica sistemului);
    - `lnusertemp` folosește `mktemp`;
    - patch-urile de securitate Debian/Trinity pentru kdelibs/kdebase/kdepim
      3.5.10 de după lansare (CVE-uri ulterioare).
-7. Mărunțișuri upstream: shebang-ul `kalyptus` (`-I/Users/duke/…`),
+8. Mărunțișuri upstream: shebang-ul `kalyptus` (`-I/Users/duke/…`),
    `checkxrefs` cu mod 644, supra-legare.
-8. Qt: bug-urile cunoscute din 4.1 (RandR, ecran 0×0, x_appdisplay).
+9. Qt: bug-urile cunoscute din 4.1 (RandR, ecran 0×0, x_appdisplay).
 
 ## 6. Pe mașina fizică de test (harness)
 
@@ -247,6 +269,15 @@ relicențiat explicit.
   probabil doar IMAP deconectat; MIME: GMime propus (înlocuirea mimelib e un
   proiect separat, cu un corpus de mesaje „urâte”). Întrebări deschise:
   renunțăm la IMAP online? biblioteca MIME?
+- Motorul de mail ca bibliotecă separată, independentă de toolkit (C++ pe
+  GLib/GIO, GMime, libsecret, stocare + index proprii); KMail din KDE3 e
+  primul frontend, înlocuit treptat pe dedesubt; un frontend Qt6/GTK/
+  icefact-ui eventual mai târziu, pe același motor. Fără rescriere de la zero
+  a întregului client.
+- Indexuri pe SQLite (doar dacă reparațiile din 5.4 nu ajung): o singură bază
+  WAL, `synchronous=NORMAL`, numărul de serie = `rowid` (dispare `.ids`),
+  maildir-ul rămâne sursa de adevăr (flag-urile din numele fișierelor),
+  baza e cache reconstruibil; tranzacții grupate pentru schimbări de stare.
 - KOrganizer/KAddressBook: CalDAV și CardDAV.
 - Konqueror ca browser: KPart nou pe CEF (Chromium Embedded), off-screen
   rendering; KHTML rămâne pentru mail, khelpcenter, pagini interne.
