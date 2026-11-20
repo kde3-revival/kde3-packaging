@@ -184,16 +184,30 @@ luată de proprietar, nu doar propunere, cu excepția celor marcate „propunere
    `~/.fonts.conf`.
 6. `ksmserver/main.cpp`: verificarea de pornire caută încă doar
    `~/.ICEauthority`; documentația la fel.
-7. Audit de securitate:
+7. Curățenia `startkde` (kdebase): cod propriu în locul utilitarelor X
+   externe, unde se poate:
+   - scoase de tot `mkfontdir` și `xset fp` (fonturi „core” X11, Qt3 folosește
+     Xft) — de verificat întâi că nimic din KDE nu mai cere fonturi core;
+   - `xsetroot` (fundal negru, cursor `left_ptr`) și `xprop`
+     (`KDE_FULL_SESSION` pe root) → un mic utilitar Xlib propriu sau direct
+     în `kstartupconfig`/`ksmserver`;
+   - `xmessage` → dialog propriu (Qt minimal) pentru erorile de pornire;
+   - `xrdb` (din `startkde` și `kcontrol/krdb`) → scriere directă în
+     `RESOURCE_MANAGER` cu Xlib/Xrm;
+   - `setxkbmap` (kxkb) → XKB direct (`XkbGetKeyboardByName` /
+     `XkbRF_*` din libxkbfile);
+   - `xauth` rămâne la kdesu (formatul `.Xauthority`, de evaluat separat);
+   - apoi scoase dependențele corespunzătoare din pachete.
+8. Audit de securitate:
    - `setgroups()` lipsește înaintea `setuid()` în start_kdeinit, drkonqi,
      ksysguardd, konsole, kdm_greet;
    - kio setează lista proprie de cifruri TLS (ocolește politica sistemului);
    - `lnusertemp` folosește `mktemp`;
    - patch-urile de securitate Debian/Trinity pentru kdelibs/kdebase/kdepim
      3.5.10 de după lansare (CVE-uri ulterioare).
-8. Mărunțișuri upstream: shebang-ul `kalyptus` (`-I/Users/duke/…`),
+9. Mărunțișuri upstream: shebang-ul `kalyptus` (`-I/Users/duke/…`),
    `checkxrefs` cu mod 644, supra-legare.
-9. Qt: bug-urile cunoscute din 4.1 (RandR, ecran 0×0, x_appdisplay).
+10. Qt: bug-urile cunoscute din 4.1 (RandR, ecran 0×0, x_appdisplay).
 
 ## 6. Pe mașina fizică de test (harness)
 
