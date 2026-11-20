@@ -148,8 +148,11 @@ luată de proprietar, nu doar propunere, cu excepția celor marcate „propunere
 
 ## 5. De făcut imediat (ordine propusă)
 
-1. Terminarea și review-ul reparațiilor de text din kde3-qt (4.1), push.
-2. Pachetele kdepim (Arch, Fedora), push; apoi bump la toate pachetele.
+1. ~~Reparațiile de text din kde3-qt~~ — făcut (0313335; bug-ul 4 e cod mort
+   pe X11). Pachetul kde3-qt e încă la e3806fb.
+2. ~~Pachetele kdepim~~ — făcut (8179594). Repo-ul kde3-kdepim e privat:
+   sursa vine din clona locală (`CLONE=../kde3-kdepim ./bump.sh kde3-kdepim`).
+   De făcut: bump kde3-kdelibs la 401c056 și kde3-qt la master.
 3. Prima sesiune reală pe mașina fizică (vezi 6): GDM 51 pe Arch încă pornește
    sesiuni X11 (`gdm-x-session`) dacă `xorg-server` e instalat; altfel LightDM
    sau `startx /opt/kde3/bin/startkde` din TTY.
