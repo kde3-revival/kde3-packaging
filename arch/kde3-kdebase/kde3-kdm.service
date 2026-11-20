@@ -1,0 +1,11 @@
+[Unit]
+Description=KDE 3 Display Manager (kdm)
+Conflicts=getty@tty1.service
+After=systemd-user-sessions.service getty@tty1.service plymouth-quit.service systemd-logind.service
+
+[Service]
+ExecStart=/opt/kde3/bin/kdm -nodaemon
+Restart=always
+
+[Install]
+Alias=display-manager.service

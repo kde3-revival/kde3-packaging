@@ -16,6 +16,15 @@ Distribution packages for the kde3-revival projects.
     ./build.sh test arch kde3-qt      # install out/arch/kde3-qt/* in a fresh
     ./build.sh test fedora kde3-qt    # container and run tests/kde3-qt.sh
 
+The packages are built in dependency order: kde3-qt, kde3-kdelibs,
+kde3-kdebase.  A package's kde3-revival dependencies are not taken from a
+repository but installed into the container from `out/<distro>/`, so
+build those first:
+
+    for p in kde3-qt kde3-kdelibs kde3-kdebase; do
+        ./build.sh arch $p && ./build.sh test arch $p
+    done
+
 Results (packages, `build.log`, `namcap.log`/`rpmlint.log`, `test.log`) go
 to `out/<distro>/<package>/`.  The build runs rootless as an unprivileged
 user inside the container; `JOBS` sets the parallelism (default `nproc`).
@@ -23,10 +32,11 @@ user inside the container; `JOBS` sets the parallelism (default `nproc`).
 ## Versions
 
 Packages are snapshots of a fixed upstream commit, versioned
-`3.3.8b+git<YYYYMMDD>` (committer date of the commit, UTC).  To move to the
-current head of master (or a given commit):
+`<version>+git<YYYYMMDD>` (3.3.8b for kde3-qt, 3.5.10 for kdelibs and
+kdebase; committer date of the commit, UTC).  To move to the current head
+of master (or a given commit):
 
-    ./bump.sh kde3-qt [commit]
+    ./bump.sh <package> [commit]
 
 This updates the commit, date, checksums and pkgrel/Release (back to 1, or
 +1 when the new commit has the same date) in both recipes and adds a Fedora
@@ -60,3 +70,56 @@ pkg-config add `-Wl,-rpath,$(pkg-config --variable=libdir kde3-qt)`.
 | kde3-qt-doc        | kde3-qt-doc        | HTML documentation, class man pages (man3) |
 
 On Arch the development files stay in the main package, as usual there.
+
+## kde3-kdelibs, kde3-kdebase
+
+Installed in `/opt/kde3` (the default prefix of kdelibs' CMake build), with
+the libraries in `/opt/kde3/lib` also on 64-bit Fedora: /opt trees are not
+multilib, kde3-qt uses `lib` as well, and KStandardDirs looks for libraries
+and modules in `lib${KDELIBSUFF}` of every KDE prefix, so the suffix is
+fixed by kdelibs (KDELIBSUFF empty) and inherited by kdebase and every
+other module through the KDE3Libs CMake package.  The system configuration
+directory stays `/opt/kde3/etc` (kderc, xdg/menus), so KDE 3 menus do not
+mix with the ones of KDE Plasma in `/etc/xdg`.
+
+No `ld.so.conf.d` entry: every binary has the RUNPATH
+`$ORIGIN/<rel>/lib:/opt/kde3/lib:/opt/kde3-qt/lib` (the absolute entries
+for setuid programs, where ld.so ignores `$ORIGIN`, and for kde3-qt).
+
+Files outside `/opt/kde3`:
+
+* kde3-kdelibs: `/etc/profile.d/kde3.{sh,csh}` (`/opt/kde3/bin`
+  *appended* to `PATH`, like kde3-qt: konsole, kate, konqueror etc. of
+  KDE Plasma/Gear keep their meaning in a normal shell; KDEDIRS is not
+  needed), `/usr/lib/cmake/KDE3Libs/` (Fedora: `/usr/lib64/cmake`; two
+  files that include the real package in `/opt/kde3/lib/cmake/KDE3Libs`,
+  so that `find_package(KDE3Libs 3.5)` works without
+  `CMAKE_PREFIX_PATH`; a symbolic link would not do, the package
+  computes its prefix from its location), and kdeprint's
+  `/usr/share/cups/model/postscript.ppd.gz`.
+* kde3-kdebase: the PAM services `/etc/pam.d/kde3` (kdm, kcheckpass) and
+  `kde3-np` (kdm logins without password) -- kdebase's default service
+  name "kde" belongs to KDE Plasma (kscreenlocker); the install hooks only
+  create services with mkpamserv when installing without DESTDIR;
+  `/usr/share/xsessions/kde3.desktop` ("KDE 3.5" in the session list of
+  display managers) and the systemd unit `kde3-kdm.service` (not enabled;
+  not "kdm.service", which Fedora's kdm-settings has).
+
+Setuid/setgid programs (set by the recipes, as the install hooks only
+work as root): kgrantpty, start_kdeinit, kpac_dhcp_helper (setuid root,
+kdelibs), kcheckpass (setuid root) and kdesud (setgid nobody, kdebase).
+fileshareset is a Perl script and stays 0755 (Linux ignores the setuid
+bit of scripts).
+
+| Arch               | Fedora              | contents |
+|--------------------|---------------------|----------|
+| kde3-kdelibs       | kde3-kdelibs        | libraries, kdeinit, dcopserver, kded, klauncher, ioslaves, meinproc, kde-config, data |
+|                    | kde3-kdelibs-devel  | headers, CMake package KDE3Libs, .so links, dcopidl, dcopidl2cpp, dcopidlng, kconfig_compiler, makekdewidgets |
+| kde3-kdebase       | kde3-kdebase        | the desktop: kwin, kicker, kdesktop, ksmserver, konqueror, konsole, kate, kcontrol, ... |
+|                    | kde3-kdebase-devel  | headers and .so links of libkonq, libkickermain, libtaskmanager, libkdecorations, ... |
+|                    | kde3-kdm            | kdm, its configuration and themes, kcm_kdm, PAM service kde3-np, kde3-kdm.service |
+
+On Fedora kdm is a sub-package of its own, so that installing the desktop
+for a session started from GDM/SDDM does not install a second display
+manager.  libpcre (PCRE 1) is not in Fedora any more: kjs is built there
+without it and uses the POSIX regular expressions of glibc.

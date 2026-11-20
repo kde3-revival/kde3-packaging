@@ -1,0 +1,8 @@
+#%PAM-1.0
+# KDE 3 (kde3-revival): logins with kdm, password checks of kcheckpass
+# (unlocking the screen).  Not "kde", which belongs to KDE Plasma.
+auth        include     system-login
+account     include     system-login
+password    include     system-login
+session     optional    pam_keyinit.so force revoke
+session     include     system-login

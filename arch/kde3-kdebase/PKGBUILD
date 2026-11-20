@@ -1,0 +1,116 @@
+# Maintainer: Serghei Amelian <serghei.amelian@gmail.com>
+#
+# kdebase 3.5.10 as maintained by kde3-revival, installed in /opt/kde3.
+# Snapshot of a fixed commit; run ../../bump.sh kde3-kdebase to move to the
+# latest commit of the master branch (updates _commit, _date, pkgver,
+# pkgrel and sha256sums).
+#
+# kde3-qt and kde3-kdelibs are not in a repository: build them first
+# (../../build.sh does that with the packages in out/).
+
+pkgname=kde3-kdebase
+_commit=332d849c67c8f16c0a02bd661d4e77af95f4f992
+_date=20261120
+pkgver=3.5.10+git${_date}
+pkgrel=1
+pkgdesc='KDE 3.5 desktop (kwin, kicker, kdesktop, konqueror, konsole, kcontrol, kdm, ...) maintained for kde3-revival'
+arch=(x86_64)
+url='https://github.com/kde3-revival/kde3-kdebase'
+license=('GPL-2.0-or-later AND LGPL-2.0-or-later AND GFDL-1.2-or-later')
+# The X tools are run by startkde (xsetroot, xprop, xrdb, xset, xmessage,
+# mkfontdir), kcontrol (xrdb, xset, setxkbmap) and kdm (xauth).
+depends=(kde3-kdelibs kde3-qt avahi fontconfig freetype2
+         glibc glu libgcc libgl libice libldap libsasl libsm libstdc++
+         libusb-compat libx11 libxau libxcomposite libxcursor
+         libxdamage libxdmcp libxext libxfixes libxft libxinerama libxkbfile
+         libxrandr libxrender libxss libxtst lm_sensors openexr openssl pam
+         perl smbclient zlib
+         xorg-mkfontscale xorg-setxkbmap xorg-xauth xorg-xmessage xorg-xprop
+         xorg-xrdb xorg-xset xorg-xsetroot)
+makedepends=(cmake ninja xorg-bdftopcf)
+optdepends=('xorg-server: to run kdm')
+backup=(etc/pam.d/kde3
+        etc/pam.d/kde3-np
+        opt/kde3/share/config/kdm/kdmrc
+        opt/kde3/share/config/kdm/backgroundrc
+        opt/kde3/share/config/kdm/Xaccess
+        opt/kde3/share/config/kdm/Xreset
+        opt/kde3/share/config/kdm/Xsession
+        opt/kde3/share/config/kdm/Xsetup
+        opt/kde3/share/config/kdm/Xstartup
+        opt/kde3/share/config/kdm/Xwilling)
+source=("kde3-kdebase-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz"
+        kde3.pam
+        kde3-np.pam
+        kde3.desktop
+        kde3-kdm.service)
+sha256sums=('558267b811b4e5701bd9d221bd6b5ece3a7c182edaef56e2f9a951dd764cdde5'
+            '6553fec18adaadec5e3e8a9c5f1c1640a0a029caa0b3d19a7c9448214848d4ce'
+            '971b0fa0177567ccd0864b0832f4f06b7f9d6813db8aa9054c8a5821f108f5cf'
+            '2ee18ee7ae5162d2185e80e5f0f2fff6a02b085c710a94174b7737aab330468a'
+            '3b7c70b3e48cfa9077ee6740458bf479b4f7a77e61caf23545babbb4256a3c54')
+
+_prefix=/opt/kde3
+
+build() {
+  # The prefix, the library directory (/opt/kde3/lib) and the RUNPATH come
+  # from kdelibs' CMake package.  CMAKE_BUILD_TYPE=None: the distribution
+  # flags only.  PAM service "kde3" (and "kde3-np" for logins without
+  # password) instead of the default "kde", which is KDE Plasma's
+  # (kscreenlocker).  GENKDMCONF_FLAGS stays empty: genkdmconf gets --no-old
+  # in a DESTDIR installation, so that the kdm configuration does not take
+  # over the build machine's.
+  cmake -S kde3-kdebase-${_commit} -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=None \
+    -DKDE3_PAM=kde3 \
+    -DKDE3_WITH_SENSORS=ON \
+    -DKDE3_WITH_SAMBA=ON \
+    -DKDE3_WITH_OPENEXR=ON \
+    -DKDE3_WITH_LIBUSB=ON \
+    -DKDEBASE_KONSOLE_FONTS=ON
+  grep -qx "CMAKE_INSTALL_PREFIX:PATH=${_prefix}" build/CMakeCache.txt ||
+    { error "configure: install prefix is not ${_prefix}"; return 1; }
+  # Fail instead of silently building without an optional feature.
+  local have
+  for have in HAVE_PAM HAVE_SSL HAVE_XCOMPOSITE HAVE_XINERAMA HAVE_DPMS \
+              HAVE_LIBSASL2 HAVE_XSCREENSAVER HAVE_DNSSD HAVE_SENSORS_SENSORS_H \
+              HAVE_LIBUSB HAVE_XKB HAVE_XFT HAVE_XRENDER HAVE_XCURSOR HAVE_XTEST \
+              HAVE_XFIXES; do
+    grep -q "^#define $have 1" build/config.h || { error "configure: $have not set"; return 1; }
+  done
+  grep -q '^#define KDM_PAM_SERVICE "kde3"' build/config.h || { error "configure: PAM service"; return 1; }
+  cmake --build build
+}
+
+package() {
+  DESTDIR="${pkgdir}" cmake --install build
+
+  local src=kde3-kdebase-${_commit} root=${pkgdir}${_prefix}
+
+  # Parts that are only built when their dependencies are found.
+  local f
+  for f in bin/kdm bin/kxkb bin/kompmgr bin/kfontinst bin/ksysguardd \
+           lib/kde3/kio_smb.so lib/kde3/kio_ldap.so lib/kde3/exrthumbnail.so \
+           share/apps/konsole/fonts/fonts.dir; do
+    [[ -e ${root}/$f ]] || { error "not built: $f"; return 1; }
+  done
+
+  # The "install-exec-hook"s that only work when installing as root:
+  # kcheckpass (password checks for kdesktop_lock) is setuid root, kdesud
+  # (password cache of kdesu) setgid nobody.
+  chmod 4755 "${root}/bin/kcheckpass"
+  chgrp nobody "${root}/bin/kdesud"
+  chmod 2755 "${root}/bin/kdesud"
+
+  # PAM services (the install hooks run mkpamserv only without DESTDIR).
+  install -Dm644 "${srcdir}/kde3.pam"    "${pkgdir}/etc/pam.d/kde3"
+  install -Dm644 "${srcdir}/kde3-np.pam" "${pkgdir}/etc/pam.d/kde3-np"
+
+  # "KDE 3.5" in the session list of display managers, and kdm as a
+  # systemd service (it is not enabled; "systemctl enable kde3-kdm" makes
+  # it the display manager).
+  install -Dm644 "${srcdir}/kde3.desktop" "${pkgdir}/usr/share/xsessions/kde3.desktop"
+  install -Dm644 "${srcdir}/kde3-kdm.service" "${pkgdir}/usr/lib/systemd/system/kde3-kdm.service"
+
+  install -Dm644 -t "${pkgdir}/usr/share/licenses/${pkgname}" ${src}/{COPYING,COPYING-DOCS}
+}

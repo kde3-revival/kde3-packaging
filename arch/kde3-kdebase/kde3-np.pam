@@ -1,0 +1,11 @@
+#%PAM-1.0
+# KDE 3 (kde3-revival): kdm logins without password (automatic login,
+# "no password" users).
+auth        required    pam_faillock.so preauth
+auth        required    pam_shells.so
+auth        required    pam_nologin.so
+auth        required    pam_permit.so
+account     include     system-local-login
+password    include     system-local-login
+session     optional    pam_keyinit.so force revoke
+session     include     system-local-login
