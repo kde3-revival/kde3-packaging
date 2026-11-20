@@ -26,6 +26,12 @@ ls -l $KDEDIR/bin/kcheckpass $KDEDIR/bin/kdesud
 # libraries must be found through the absolute RUNPATH entries.
 ldd $KDEDIR/bin/kcheckpass | grep -E 'kde3|not found' || true
 
+step "X tools run by startkde, kcontrol, kdm and dcopserver"
+for t in iceauth mkfontdir setxkbmap xauth xmessage xprop xrdb xset xsetroot; do
+    command -v $t >/dev/null || fail "$t not installed"
+done
+echo ok
+
 step "PAM, session, kdm"
 for f in /etc/pam.d/kde3 /etc/pam.d/kde3-np /usr/share/xsessions/kde3.desktop \
          /usr/lib/systemd/system/kde3-kdm.service; do
