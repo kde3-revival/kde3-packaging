@@ -9,10 +9,10 @@
 # with the packages in out/).
 
 pkgname=kde3-kdelibs
-_commit=5da9f12fcfdea83c4a27c58dadfcb8e474b6b5c6
+_commit=be0b03ad5f36f0217e6e26600814dc3b85393bce
 _date=20261120
 pkgver=3.5.10+git${_date}
-pkgrel=2
+pkgrel=3
 pkgdesc='KDE 3.5 core libraries maintained for kde3-revival'
 arch=(x86_64)
 url='https://github.com/kde3-revival/kde3-kdelibs'
@@ -21,10 +21,10 @@ license=('LGPL-2.0-or-later AND GPL-2.0-or-later AND BSD-2-Clause AND GFDL-1.2-o
 # dcopserver; perl runs dcopidlng (kde3_use_dcopidlng() of other modules),
 # fileshareset and kconf_update scripts; libpng and zlib are needed by the
 # CMake package (find_dependency()).
-depends=(kde3-qt acl avahi bzip2 fontconfig glibc krb5 libcups libgcc
-         libice libidn libjpeg-turbo libpng libpsl libpulse libsm libsndfile
-         libstdc++ libthai libtiff libutempter libx11 libxext libxft libxml2
-         libxrender libxslt openssl pcre perl xorg-iceauth zlib)
+depends=(kde3-qt acl avahi bzip2 cairo fontconfig glib2 glibc krb5 libcups
+         libgcc libice libidn libjpeg-turbo libpng libpsl libpulse librsvg
+         libsm libsndfile libstdc++ libthai libtiff libutempter libx11 libxext
+         libxft libxml2 libxrender libxslt openssl pcre perl xorg-iceauth zlib)
 makedepends=(cmake ninja)
 optdepends=('aspell: spell checking (KSpell)'
             'hspell: Hebrew spell checking (KSpell)'
@@ -35,7 +35,7 @@ source=("kde3-kdelibs-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz"
         kde3.csh
         KDE3LibsConfig.cmake
         KDE3LibsConfigVersion.cmake)
-sha256sums=('3beb282ce578a92235f84b316f161fd568fdc012d8542ff1e2ed22120c94413f'
+sha256sums=('0a81fd91add41f643dec04f3b671026af84c302ef398fb77d926200be36e42dc'
             '8bc43d087aa2ac1aacecb27b038ad274d5298a0a8078fe87b544b561be038c17'
             '93f0ad67b86ae04c9460cdb31401ec89f5547dcd9788db3f2fbcddaccdb7e202'
             '6e72cca77496e941f7114654812862427ebc3f0c6e83a7d846f9bec7744a825e'
@@ -64,7 +64,7 @@ build() {
   local have
   for have in HAVE_SSL HAVE_LIBIDN HAVE_LIBPSL HAVE_LIBGSSAPI HAVE_DNSSD \
               HAVE_PCREPOSIX HAVE_PULSEAUDIO HAVE_LIBTIFF HAVE_UTEMPTER \
-              USE_POSIX_ACL HAVE_LIBTHAI HAVE_INOTIFY HAVE_CUPS; do
+              USE_POSIX_ACL HAVE_LIBTHAI HAVE_INOTIFY HAVE_CUPS HAVE_LIBRSVG; do
     grep -q "^#define $have 1" build/config.h || { error "configure: $have not set"; return 1; }
   done
   cmake --build build

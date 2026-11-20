@@ -6,7 +6,7 @@
 # kde3-qt is not in a repository: build it first (../../build.sh does that
 # with the packages in out/).
 
-%global commit     5da9f12fcfdea83c4a27c58dadfcb8e474b6b5c6
+%global commit     be0b03ad5f36f0217e6e26600814dc3b85393bce
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 %global date       20261120
 
@@ -15,7 +15,7 @@
 
 Name:           kde3-kdelibs
 Version:        3.5.10+git%{date}
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        KDE 3.5 core libraries maintained for kde3-revival
 
 License:        LGPL-2.0-or-later AND GPL-2.0-or-later AND BSD-2-Clause AND GFDL-1.2-or-later
@@ -33,6 +33,7 @@ BuildRequires:  kde3-qt-devel
 BuildRequires:  perl-interpreter
 BuildRequires:  avahi-compat-libdns_sd-devel
 BuildRequires:  bzip2-devel
+BuildRequires:  cairo-devel
 BuildRequires:  cups-devel
 BuildRequires:  fontconfig-devel
 BuildRequires:  freetype-devel
@@ -44,6 +45,7 @@ BuildRequires:  libidn-devel
 BuildRequires:  libjpeg-turbo-devel
 BuildRequires:  libpng-devel
 BuildRequires:  libpsl-devel
+BuildRequires:  librsvg2-devel
 BuildRequires:  libSM-devel
 BuildRequires:  libsndfile-devel
 BuildRequires:  libthai-devel
@@ -122,7 +124,7 @@ makekdewidgets.
 # Fail instead of silently building without an optional feature.
 for have in HAVE_SSL HAVE_LIBIDN HAVE_LIBPSL HAVE_LIBGSSAPI HAVE_DNSSD \
             HAVE_PULSEAUDIO HAVE_LIBTIFF HAVE_UTEMPTER USE_POSIX_ACL \
-            HAVE_LIBTHAI HAVE_INOTIFY HAVE_CUPS; do
+            HAVE_LIBTHAI HAVE_INOTIFY HAVE_CUPS HAVE_LIBRSVG; do
     grep -q "^#define $have 1" %{__cmake_builddir}/config.h || { echo "configure: $have not set" >&2; exit 1; }
 done
 %cmake_build
@@ -191,6 +193,9 @@ sed -i 's|^\(.*\)$|"\1"|' devel.list
 %{_libdir}/cmake/KDE3Libs
 
 %changelog
+* Sat Nov 21 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261120-3
+- Snapshot of kde3-revival/kde3-kdelibs commit be0b03a
+
 * Fri Nov 20 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261120-2
 - Snapshot of kde3-revival/kde3-kdelibs commit 5da9f12
 

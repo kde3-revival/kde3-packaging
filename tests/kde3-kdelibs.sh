@@ -28,6 +28,10 @@ step "all ELF files resolve, RUNPATH only into /opt/kde3 and /opt/kde3-qt"
 check_elf $KDEDIR $KDEDIR/lib /opt/kde3-qt/lib
 readelf -d $KDEDIR/bin/kded | grep -E 'NEEDED|RUNPATH'
 
+step "SVG icons (librsvg)"
+readelf -d $KDEDIR/lib/libkdecore.so.4 | grep -q 'NEEDED.*librsvg-2' || fail "libkdecore is built without librsvg"
+echo ok
+
 step "setuid helpers"
 for f in kgrantpty start_kdeinit kpac_dhcp_helper; do
     ls -l $KDEDIR/bin/$f
