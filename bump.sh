@@ -15,6 +15,13 @@
 #
 # Needs curl, python3, sha256sum and gh (if logged in) or plain access to
 # api.github.com.
+#
+# CLONE=<git clone> takes the commit, its date and the tarball from a local
+# clone of the repository instead (for a repository that cannot be
+# downloaded, such as a private one): the tarball is made with "git
+# archive" and "gzip -n", which gives the same file as GitHub's
+# /archive/<commit>.tar.gz, and a copy is kept in out/sources/, where
+# build.sh takes it from.
 
 set -euo pipefail
 
@@ -38,11 +45,15 @@ api() {
     fi
 }
 
-read -r commit when < <(api "repos/$r/commits/$ref" | python3 -c '
+if [[ -n ${CLONE:-} ]]; then
+    read -r commit when < <(git -C "$CLONE" log -1 --format='%H %cI' "$ref^{commit}")
+else
+    read -r commit when < <(api "repos/$r/commits/$ref" | python3 -c '
 import json, sys
 c = json.load(sys.stdin)
 print(c["sha"], c["commit"]["committer"]["date"])')
-[[ $commit =~ ^[0-9a-f]{40}$ && -n $when ]] || { echo "could not parse the GitHub API answer" >&2; exit 1; }
+fi
+[[ $commit =~ ^[0-9a-f]{40}$ && -n $when ]] || { echo "could not determine the commit and its date" >&2; exit 1; }
 date=$(date -u -d "$when" +%Y%m%d)
 
 pb=$top/arch/$pkg/PKGBUILD
@@ -59,7 +70,13 @@ fi
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 tarball=$pkg-$commit.tar.gz
-curl -fsSL -o "$tmp/$tarball" "https://github.com/$r/archive/$commit.tar.gz"
+if [[ -n ${CLONE:-} ]]; then
+    git -C "$CLONE" archive --format=tar --prefix="$pkg-$commit/" "$commit" | gzip -n >"$tmp/$tarball"
+    mkdir -p "$top/out/sources"
+    cp "$tmp/$tarball" "$top/out/sources/"
+else
+    curl -fsSL -o "$tmp/$tarball" "https://github.com/$r/archive/$commit.tar.gz"
+fi
 sum=$(sha256sum "$tmp/$tarball" | cut -d' ' -f1)
 echo "sha256 $sum"
 

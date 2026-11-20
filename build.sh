@@ -20,6 +20,10 @@
 #   JOBS       parallel make jobs (default: nproc)
 #   ARCH_IMAGE, FEDORA_IMAGE   override the base images
 #
+# Source tarballs found in out/sources/ (put there by "CLONE=... ./bump.sh"
+# for a repository that cannot be downloaded) are used instead of
+# downloading them; their checksums are verified as usual.
+#
 # The containers run rootless; inside them the build runs as an unprivileged
 # user "builder".  Nothing is installed on the host.
 
@@ -31,7 +35,7 @@ ARCH_IMAGE=${ARCH_IMAGE:-docker.io/library/archlinux:latest}
 FEDORA_IMAGE=${FEDORA_IMAGE:-registry.fedoraproject.org/fedora:latest}
 
 usage() {
-    sed -n '2,23p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,27p' "$0" | sed 's/^# \{0,1\}//'
     exit 1
 }
 
@@ -49,7 +53,8 @@ run() {   # run <image> <script> [extra podman args...]
     local image=$1 script=$2; shift 2
     podman run --rm -i --init --security-opt label=disable \
         -e JOBS="$JOBS" -e PKG="$pkg" -e DEPS="${deps[$pkg]}" \
-        -v "$top:/src:ro" -v "$out:/out" -v "$top/out/$distro:/deps:ro" "$@" \
+        -v "$top:/src:ro" -v "$out:/out" -v "$top/out/$distro:/deps:ro" \
+        -v "$top/out/sources:/sources:ro" "$@" \
         "$image" bash -euo pipefail -c "$script"
 }
 
@@ -75,6 +80,7 @@ pacman -Syu --noconfirm --needed base-devel namcap sudo >/dev/null
 useradd -m builder
 echo "builder ALL=(ALL) NOPASSWD: ALL" >/etc/sudoers.d/builder
 cp -r /src/arch/$PKG /home/builder/pkg
+cp /sources/$PKG-* /home/builder/pkg/ 2>/dev/null || true
 chown -R builder: /home/builder/pkg
 cd /home/builder/pkg
 sudo -u builder MAKEFLAGS="-j$JOBS" makepkg --syncdeps --noconfirm --cleanbuild
@@ -120,6 +126,7 @@ su - builder -c "
     set -euo pipefail
     rpmdev-setuptree
     cp /src/fedora/$PKG/* rpmbuild/SOURCES/
+    cp /sources/$PKG-* rpmbuild/SOURCES/ 2>/dev/null || true
     mv rpmbuild/SOURCES/$PKG.spec rpmbuild/SPECS/
     spectool -g -S -C rpmbuild/SOURCES rpmbuild/SPECS/$PKG.spec
     (cd rpmbuild/SOURCES && sha256sum -c sources)
@@ -162,7 +169,7 @@ for d in ${deps[$pkg]}; do
 done
 
 out=$top/out/$distro/$pkg
-mkdir -p "$out"
+mkdir -p "$out" "$top/out/sources"
 log=$out/$mode.log
 script_var=${distro}_${mode}
 
