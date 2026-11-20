@@ -27,16 +27,26 @@ while IFS= read -r -d '' f; do
     fi
     rp=$(readelf -d "$f" | sed -n 's/.*(\(RPATH\|RUNPATH\)).*\[\(.*\)\]/\2/p')
     for d in ${rp//:/ }; do
+        [[ $d == '$ORIGIN'* ]] || fail "$f has a RUNPATH entry not relative to \$ORIGIN: $d"
         r=$(realpath -m "${d//\$ORIGIN/$(dirname "$f")}")
         [[ $r == /opt/kde3-qt/* ]] || fail "$f has RUNPATH entry $d ($r)"
     done
 done < <(find /opt/kde3-qt -type f \( -name '*.so*' -o -perm -u+x \) -print0)
 echo "$n ELF files checked"
 
+step "installed files do not refer to the build tree"
+[[ $(readlink "$QTDIR/mkspecs/default") == linux-g++ ]] || fail "mkspecs/default -> $(readlink "$QTDIR/mkspecs/default")"
+[[ -z $(find "$QTDIR/mkspecs" -mindepth 2 -type l) ]] || fail "stray links in mkspecs: $(find "$QTDIR/mkspecs" -mindepth 2 -type l)"
+[[ -z $(find "$QTDIR/lib" -name '*.la') ]] || fail "libtool archives installed"
+! grep -rIl -e /builder/ -e /rpmbuild/ "$QTDIR/lib" "$QTDIR/mkspecs" || fail "build directory in the files above"
+! grep -rIl X11R6 "$QTDIR/lib" "$QTDIR"/mkspecs/linux-* || fail "/usr/X11R6 in the files above"
+echo ok
+
 step "pkg-config"
 pkg-config --modversion kde3-qt
 pkg-config --cflags --libs kde3-qt
 pkg-config --cflags kde3-qt | grep -q -- -DQT_TABLET_SUPPORT || fail "built without tablet (XInput) support"
+[[ $(pkg-config --libs kde3-qt) == "-L/opt/kde3-qt/lib -lkde3-qt" ]] || fail "unexpected pkg-config --libs"
 
 step "optional X11 features are linked in"
 for lib in libXft libXrender libXrandr libXcursor libXinerama libXi libGL libSM; do
@@ -132,6 +142,20 @@ qmake hello.pro
 make
 readelf -d hello | grep -E 'NEEDED|RPATH|RUNPATH'
 ./hello
+
+step "qmake project without CONFIG += thread (falls back to libkde3-qt)"
+mkdir nothread
+cp hello.h main.cpp nothread/
+cat >nothread/nothread.pro <<'EOF'
+TEMPLATE = app
+CONFIG  += qt warn_on release
+CONFIG  -= thread
+HEADERS  = hello.h
+SOURCES  = main.cpp
+TARGET   = hello
+EOF
+(cd nothread && qmake nothread.pro && make && ./hello) 2>&1 | tee nothread.log
+grep -q 'thread support: yes' nothread.log || fail "the non-thread project did not get QT_THREAD_SUPPORT from libkde3-qt.prl"
 
 step "pkg-config build"
 moc hello.h -o moc_hello.cpp
