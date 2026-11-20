@@ -22,7 +22,6 @@ Source2:        kde3-qt.csh
 
 BuildRequires:  gcc-c++
 BuildRequires:  make
-BuildRequires:  patchelf
 BuildRequires:  cups-devel
 BuildRequires:  fontconfig-devel
 BuildRequires:  freetype-devel
@@ -57,8 +56,9 @@ translations and the Qt settings tool.
 Summary:        Development files for kde3-qt
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 Requires:       pkgconfig
-# kde3-qt.pc and the qmake mkspec link these libraries explicitly (Libs:
-# rather than Requires:, so there are no automatic pkgconfig dependencies).
+# qmake links these libraries explicitly into every Qt program (the mkspec's
+# QMAKE_LIBS_X11, QMAKE_LIBS_OPENGL etc. and the .prl files of the static
+# libraries); kde3-qt.pc lists them in Libs.private.
 Requires:       fontconfig-devel
 Requires:       freetype-devel
 Requires:       libICE-devel
@@ -114,26 +114,16 @@ web browser) and the class reference man pages.
 # them.
 cp -p mkspecs/linux-g++/qmake.conf qmake.conf.pristine
 setvar() { sed -i "s|^\($1[[:space:]]*\)=.*|\1= $2|" mkspecs/linux-g++/qmake.conf; }
-# Some debug output still passes a non-literal format to qDebug() (e.g.
-# QGDict::statistics()); keep -Wformat-security as a warning until that is
-# fixed upstream.
-setvar QMAKE_CFLAGS           "%{build_cflags} -Wno-error=format-security"
-setvar QMAKE_CXXFLAGS         "%{build_cxxflags} -Wno-error=format-security"
+setvar QMAKE_CFLAGS           "%{build_cflags}"
+setvar QMAKE_CXXFLAGS         "%{build_cxxflags}"
 setvar QMAKE_CFLAGS_RELEASE   ""
 setvar QMAKE_CXXFLAGS_RELEASE ""
 setvar QMAKE_LFLAGS           "%{build_ldflags}"
 setvar QMAKE_STRIP            ""
 
-# The tools get a RUNPATH to the install location only, but uic runs during
-# the build (and "make install" may run it again).
-export LD_LIBRARY_PATH=$PWD/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
-
 # configure asks to accept the license (GPL 2/3 or QPL); there is no option
-# for that, so answer on stdin.  Its library tests only look in /usr/lib,
-# /lib, the mkspec's X11 directory and -L directories, so on lib64 systems
-# Xft, Xinerama, Xcursor, XRandR, XRender, XInput, OpenGL and CUPS are all
-# silently disabled without -L for the lib64 directory.
-echo yes | ./configure -prefix %{qtdir} -L%{_libdir}
+# for that, so answer on stdin.
+echo yes | ./configure -prefix %{qtdir}
 # Fail instead of silently building a reduced library.
 for feature in opengl cups xinerama xcursor xrandr xrender xftfreetype tablet; do
     grep -q "^CONFIG +=.* $feature\b" .qmake.cache || { echo "configure: $feature not enabled" >&2; exit 1; }
@@ -144,46 +134,11 @@ done
 %make_build sub-tools
 
 %install
-export LD_LIBRARY_PATH=$PWD/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 make INSTALL_ROOT=%{buildroot} install
 
 root=%{buildroot}%{qtdir}
-build=$PWD
 
 install -p -m644 qmake.conf.pristine $root/mkspecs/linux-g++/qmake.conf
-
-# qmake's install rule points mkspecs/default at the build tree (and, as
-# the copied tree already has a "default" link, ln -sf puts that link
-# inside linux-g++/).  Make it a relative link to the spec.
-rm -f $root/mkspecs/linux-g++/linux-g++
-ln -sfn linux-g++ $root/mkspecs/default
-
-# qmake gives the programs a RUNPATH to the install location and every
-# library and plugin one to its build directory (DESTDIR).  Map the build
-# directory to the install location and make all entries relative to
-# $ORIGIN (check-rpaths rejects an absolute RUNPATH outside /usr/lib*).
-find $root -type f \( -name '*.so*' -o -perm -u+x \) -print0 |
-while IFS= read -r -d '' f; do
-    rp=$(patchelf --print-rpath "$f" 2>/dev/null) || continue
-    [ -n "$rp" ] || continue
-    dir=$(dirname "${f#%{buildroot}}")
-    new=
-    for e in ${rp//:/ }; do
-        [[ $e == "$build"* ]] && e=%{qtdir}${e#$build}
-        if [[ $e == %{qtdir}* ]]; then
-            e=$(realpath -m --relative-to="$dir" "$e")
-            [[ $e == . ]] && e='$ORIGIN' || e='$ORIGIN/'$e
-        fi
-        [[ :$new: == *:"$e":* ]] || new=${new:+$new:}$e
-    done
-    patchelf --set-rpath "$new" "$f"
-done
-
-# The .prl files (read by qmake's link_prl) record the build directory.
-sed -i -e '/^QMAKE_PRL_BUILD_DIR/d' -e "s|-L$build/lib|-L%{qtdir}/lib|g" $root/lib/*.prl
-
-# libtool archives are not used.
-rm -f $root/lib/*.la
 
 # Man pages are not installed by "make install"; /opt/kde3-qt/man is found
 # by man(1) through PATH.

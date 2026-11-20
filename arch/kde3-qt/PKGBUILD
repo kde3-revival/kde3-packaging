@@ -17,7 +17,7 @@ url='https://github.com/kde3-revival/kde3-qt'
 license=('GPL-2.0-only OR GPL-3.0-only OR QPL-1.0')
 makedepends=(libcups fontconfig freetype2 glu libgl libice libjpeg-turbo libmng
              libpng libsm libx11 libxcursor libxext libxft libxi libxinerama
-             libxmu libxrandr libxrender zlib patchelf libgcc libstdc++)
+             libxmu libxrandr libxrender zlib libgcc libstdc++)
 source=("kde3-qt-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz"
         kde3-qt.sh
         kde3-qt.csh)
@@ -41,27 +41,17 @@ _setvar() {
 _setflags() {
   local conf=mkspecs/linux-g++/qmake.conf
   [[ -f ${srcdir}/qmake.conf.pristine ]] || cp $conf "${srcdir}/qmake.conf.pristine"
-  # Some debug output still passes a non-literal format to qDebug() (e.g.
-  # QGDict::statistics()); keep -Wformat-security as a warning until that
-  # is fixed upstream.
-  _setvar QMAKE_CFLAGS           "${CFLAGS} -Wno-error=format-security"   $conf
-  _setvar QMAKE_CXXFLAGS         "${CXXFLAGS} -Wno-error=format-security" $conf
+  _setvar QMAKE_CFLAGS           "${CFLAGS}"   $conf
+  _setvar QMAKE_CXXFLAGS         "${CXXFLAGS}" $conf
   _setvar QMAKE_CFLAGS_RELEASE   ""            $conf
   _setvar QMAKE_CXXFLAGS_RELEASE ""            $conf
   _setvar QMAKE_LFLAGS           "${LDFLAGS}"  $conf
   _setvar QMAKE_STRIP            ""            $conf
 }
 
-# The tools get a RUNPATH to the install location only, but uic runs during
-# the build (and "make install" may run it again).
-_buildenv() {
-  export LD_LIBRARY_PATH="${srcdir}/kde3-qt-${_commit}/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
-}
-
 build() {
   cd kde3-qt-${_commit}
   _setflags
-  _buildenv
   # configure asks to accept the license (GPL 2/3 or QPL); there is no
   # option for that, so answer on stdin.
   echo yes | ./configure -prefix ${_prefix}
@@ -99,48 +89,12 @@ package_kde3-qt() {
               'kde3-qt-doc: HTML and man page documentation')
 
   cd kde3-qt-${_commit}
-  _buildenv
   make INSTALL_ROOT="${pkgdir}" install
 
   local root=${pkgdir}${_prefix}
-  local build=${srcdir}/kde3-qt-${_commit}
 
   # The pristine mkspec (see _setflags()).
   install -m644 "${srcdir}/qmake.conf.pristine" "${root}/mkspecs/linux-g++/qmake.conf"
-
-  # qmake's install rule points mkspecs/default at the build tree (and, as
-  # the copied tree already has a "default" link, ln -sf puts that link
-  # inside linux-g++/).  Make it a relative link to the spec.
-  rm -f "${root}/mkspecs/linux-g++/linux-g++"
-  ln -sfn linux-g++ "${root}/mkspecs/default"
-
-  # qmake gives the programs a RUNPATH to the install location and every
-  # library and plugin one to its build directory (DESTDIR).  Map the build
-  # directory to the install location and make all entries relative to
-  # $ORIGIN (an absolute /opt RUNPATH is rejected by Fedora's check-rpaths
-  # and flagged as insecure by namcap).
-  local f rp new e dir
-  while IFS= read -r -d '' f; do
-    rp=$(patchelf --print-rpath "$f" 2>/dev/null) || continue
-    [[ -n $rp ]] || continue
-    dir=$(dirname "${f#${pkgdir}}")
-    new=
-    for e in ${rp//:/ }; do
-      [[ $e == "${build}"* ]] && e=${_prefix}${e#${build}}
-      if [[ $e == "${_prefix}"* ]]; then
-        e=$(realpath -m --relative-to="$dir" "$e")
-        [[ $e == . ]] && e='$ORIGIN' || e='$ORIGIN/'$e
-      fi
-      [[ :$new: == *:"$e":* ]] || new=${new:+$new:}$e
-    done
-    patchelf --set-rpath "$new" "$f"
-  done < <(find "${root}" -type f \( -name '*.so*' -o -perm -u+x \) -print0)
-
-  # The .prl files (read by qmake's link_prl) record the build directory.
-  sed -i -e '/^QMAKE_PRL_BUILD_DIR/d' -e "s|-L${build}/lib|-L${_prefix}/lib|g" "${root}"/lib/*.prl
-
-  # libtool archives are not used.
-  rm -f "${root}"/lib/*.la
 
   # Man pages are not installed by "make install"; /opt/kde3-qt/man is found
   # by man(1) through PATH.
