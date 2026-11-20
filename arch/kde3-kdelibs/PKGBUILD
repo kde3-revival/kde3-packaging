@@ -9,10 +9,10 @@
 # with the packages in out/).
 
 pkgname=kde3-kdelibs
-_commit=7b2523840a96279e9dd66229bb72321cffdb8df7
+_commit=5da9f12fcfdea83c4a27c58dadfcb8e474b6b5c6
 _date=20261120
 pkgver=3.5.10+git${_date}
-pkgrel=1
+pkgrel=2
 pkgdesc='KDE 3.5 core libraries maintained for kde3-revival'
 arch=(x86_64)
 url='https://github.com/kde3-revival/kde3-kdelibs'
@@ -35,7 +35,7 @@ source=("kde3-kdelibs-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz"
         kde3.csh
         KDE3LibsConfig.cmake
         KDE3LibsConfigVersion.cmake)
-sha256sums=('777183013cc8deeb3b67cc44acb6e0a7127e94968578996aaa2884bee7a6e5d5'
+sha256sums=('3beb282ce578a92235f84b316f161fd568fdc012d8542ff1e2ed22120c94413f'
             '8bc43d087aa2ac1aacecb27b038ad274d5298a0a8078fe87b544b561be038c17'
             '93f0ad67b86ae04c9460cdb31401ec89f5547dcd9788db3f2fbcddaccdb7e202'
             '6e72cca77496e941f7114654812862427ebc3f0c6e83a7d846f9bec7744a825e'
