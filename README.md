@@ -17,11 +17,11 @@ Distribution packages for the kde3-revival projects.
     ./build.sh test fedora kde3-qt    # container and run tests/kde3-qt.sh
 
 The packages are built in dependency order: kde3-qt, kde3-kdelibs,
-kde3-kdebase.  A package's kde3-revival dependencies are not taken from a
+kde3-kdebase, kde3-kdepim.  A package's kde3-revival dependencies are not taken from a
 repository but installed into the container from `out/<distro>/`, so
 build those first:
 
-    for p in kde3-qt kde3-kdelibs kde3-kdebase; do
+    for p in kde3-qt kde3-kdelibs kde3-kdebase kde3-kdepim; do
         ./build.sh arch $p && ./build.sh test arch $p
     done
 
@@ -32,8 +32,8 @@ user inside the container; `JOBS` sets the parallelism (default `nproc`).
 ## Versions
 
 Packages are snapshots of a fixed upstream commit, versioned
-`<version>+git<YYYYMMDD>` (3.3.8b for kde3-qt, 3.5.10 for kdelibs and
-kdebase; committer date of the commit, UTC).  To move to the current head
+`<version>+git<YYYYMMDD>` (3.3.8b for kde3-qt, 3.5.10 for kdelibs,
+kdebase and kdepim; committer date of the commit, UTC).  To move to the current head
 of master (or a given commit):
 
     ./bump.sh <package> [commit]
@@ -41,6 +41,15 @@ of master (or a given commit):
 This updates the commit, date, checksums and pkgrel/Release (back to 1, or
 +1 when the new commit has the same date) in both recipes and adds a Fedora
 changelog entry; review with `git diff` and commit.
+
+A repository that cannot be downloaded (kde3-kdepim is private for now)
+is taken from a local clone:
+
+    CLONE=../kde3-kdepim ./bump.sh kde3-kdepim
+
+The tarball is made with `git archive` and `gzip -n`, which gives the
+same file (and checksum) as GitHub's `/archive/<commit>.tar.gz`; a copy
+goes to `out/sources/`, which build.sh uses instead of downloading.
 
 ## kde3-qt
 
@@ -71,7 +80,7 @@ pkg-config add `-Wl,-rpath,$(pkg-config --variable=libdir kde3-qt)`.
 
 On Arch the development files stay in the main package, as usual there.
 
-## kde3-kdelibs, kde3-kdebase
+## kde3-kdelibs, kde3-kdebase, kde3-kdepim
 
 Installed in `/opt/kde3` (the default prefix of kdelibs' CMake build), with
 the libraries in `/opt/kde3/lib` also on 64-bit Fedora: /opt trees are not
@@ -118,8 +127,20 @@ bit of scripts).
 | kde3-kdebase       | kde3-kdebase        | the desktop: kwin, kicker, kdesktop, ksmserver, konqueror, konsole, kate, kcontrol, ... |
 |                    | kde3-kdebase-devel  | headers and .so links of libkonq, libkickermain, libtaskmanager, libkdecorations, ... |
 |                    | kde3-kdm            | kdm, its configuration and themes, kcm_kdm, PAM service kde3-np, kde3-kdm.service |
+| kde3-kdepim        | kde3-kdepim         | KMail, KOrganizer, KAddressBook, Kontact, Kleopatra, KWatchGnuPG, KMailCvt, imap4/sieve/mbox ioslaves, libraries |
+|                    | kde3-kdepim-devel   | headers and .so links of libkcal, libkmime, mimelib, libkdepim, gpgme++, Kleo, ... |
 
 On Fedora kdm is a sub-package of its own, so that installing the desktop
 for a session started from GDM/SDDM does not install a second display
 manager.  libpcre (PCRE 1) is not in Fedora any more: kjs is built there
 without it and uses the POSIX regular expressions of glibc.
+
+kde3-kdepim requires kde3-kdebase: KMail sends and fetches mail through
+its pop3 and smtp ioslaves, and KAddressBook's LDAP search uses kio_ldap
+(imap4, sieve and mbox are kdepim's own).  gnupg (gpg, gpgsm,
+gpg-agent) is a dependency as well: the crypto backends run it through
+gpgme and, for KMail's classic OpenPGP support, directly.  kdepim is
+built with cyrus-sasl (required: sieve, imap4 authentication), without
+gnokii (mobile phones in KAddressBook; its service file is removed, as
+the filter is not built) and without the experimental full-text index
+of KMail (indexlib).
