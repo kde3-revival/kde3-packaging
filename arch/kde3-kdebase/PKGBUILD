@@ -28,7 +28,8 @@ depends=(kde3-kdelibs kde3-qt avahi fontconfig freetype2
          xorg-mkfontscale xorg-setxkbmap xorg-xauth xorg-xmessage xorg-xprop
          xorg-xrdb xorg-xset xorg-xsetroot)
 makedepends=(cmake ninja xorg-bdftopcf)
-optdepends=('xorg-server: to run kdm')
+optdepends=('gdb: backtraces in the crash handler (DrKonqi)'
+            'xorg-server: to run kdm')
 backup=(etc/pam.d/kde3
         etc/pam.d/kde3-np
         opt/kde3/share/config/kdm/kdmrc

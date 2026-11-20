@@ -75,6 +75,8 @@ Requires:       xrdb
 Requires:       xset
 Requires:       xsetroot
 Suggests:       kde3-kdm
+# DrKonqi runs gdb for the backtrace of a crashed program.
+Suggests:       gdb
 
 %description
 kdebase 3.5.10 as maintained by the kde3-revival project: the KDE 3.5
