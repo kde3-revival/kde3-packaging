@@ -50,6 +50,8 @@ BuildRequires:  libSM-devel
 BuildRequires:  libsndfile-devel
 BuildRequires:  libthai-devel
 BuildRequires:  libtiff-devel
+# kimgio's WebP plugin (kdelibs b825f3c and later)
+BuildRequires:  libwebp-devel
 BuildRequires:  libutempter-devel
 BuildRequires:  libX11-devel
 BuildRequires:  libXext-devel
