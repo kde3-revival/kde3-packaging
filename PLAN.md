@@ -331,6 +331,15 @@ relicențiat explicit.
 - Text: vezi 7.1.
 
 ### 7.4 Aplicații
+- TLS unificat pe GIO (decizia userului, 21.11.2026; pasul intermediar —
+  kdelibs legat direct de OpenSSL 3, fără KOpenSSLProxy/dlopen — e făcut
+  înainte): KSSL înlocuit cu GTlsConnection din GIO (glib-networking, backend
+  GnuTLS sau OpenSSL), un singur strat TLS pentru tot desktopul: kio_http,
+  TCPSlaveBase (IMAP/POP3/SMTP), stiva de mail nouă de mai jos, KWPEPart
+  (WebKit are deja propriul TLS); certificatele sistemului (p11-kit trust),
+  TLS 1.3, OCSP/CRL de la GLib; de adaptat: dialogurile de certificate KDE,
+  kcm Crypto (excepții per site, certificate client), KSSLCertificate ca
+  fațadă peste GTlsCertificate pentru compatibilitatea API.
 - Stiva de mail: protocoalele IMAP/POP3/SMTP integrate în KMail, asincron pe
   GIO (TLS, timeout-uri, reconectare, IDLE), slave-urile KIO scoase pe rând;
   probabil doar IMAP deconectat; MIME: GMime propus (înlocuirea mimelib e un
