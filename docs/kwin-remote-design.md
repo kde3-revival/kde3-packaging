@@ -817,3 +817,16 @@ Estimările sunt orientative (săptămâni de lucru concentrat).
 10. **Codecuri hardware**: rămân plugin opțional după faza 1 (pe Fedora cer RPM
     Fusion), sau sunt necesare mai devreme pentru un caz anume (video pe tot
     ecranul)?
+
+## Decizii ale userului (chestionar, 21.11.2026)
+- Focusul tastaturii: după poziția mouse-ului (KVM/Synergy); ieșire forțată la desktopul local: **Ctrl+Alt+Shift+Esc**.
+- Legătura căzută: monitorul de la birou rămâne rezervat (ultima imagine estompată, „Reconectare…”), revine automat.
+- Ecranul laptopului în timpul sesiunii: **lăsat aprins** (fără blanking pentru intimitate).
+- Securitate în prima versiune: **nimic până la WireGuard** (fibra e privată); AEAD cu cheie partajată rămâne opțiune ulterioară, protocolul păstrează loc pentru ea în antet.
+- Clipboard: CLIPBOARD + PRIMARY, transfer leneș (doar lista de tipuri până la paste).
+- Fișiere la drag and drop: canal propriu, expus ca kioslave `kremote:` (nu sftp/fish); aplicațiile non-KDE fără DnD de fișiere în prima versiune.
+- După reboot-ul laptopului: autologin + blocare imediată; ecranul de blocare se deblochează de la distanță.
+- Codare video hardware: plugin după faza 1.
+- Fibra: **1 Gbit/s** → proiectat pentru 1 Gbit/s: zone fără pierderi + JPEG pentru zone video; ecran întreg la 60 fps doar cu compresie.
+- Laptopul colegului: GPU **Intel integrat** (VAAPI; 4:4:4 doar pe generațiile noi — de verificat modelul).
+- t590: rămâne pe 100 Mbit/s deocamdată (banc de test pentru cazul degradat); userul repară link-ul mai târziu.
