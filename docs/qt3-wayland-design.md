@@ -330,10 +330,15 @@ comandă: `KCmdLineArgs` refuză opțiunile Qt necunoscute). Altfel: **X11
 întâi** cât `DISPLAY` e setat (Xwayland în sesiunile Wayland), Wayland dacă
 lipsește `DISPLAY` și există `WAYLAND_DISPLAY`, și Wayland ca rezervă când
 `XOpenDisplay` eșuează și `WAYLAND_DISPLAY` există. Aplicațiile alese pot
-fi pornite cu `QT3_PLATFORM=wayland` din .desktop. Atenție: variabila se
-moștenește prin kdeinit/klauncher în procesele copil — fie e scoasă din
-mediu după citire, fie klauncher o gestionează explicit (de decis în etapa
-D). După etapa D ordinea se inversează pentru `XDG_SESSION_TYPE=wayland`.
+fi pornite cu `QT3_PLATFORM=wayland` din .desktop. Moștenirea prin
+kdeinit/klauncher (decis în etapa D, kdelibs `wayland-runtime`): variabila
+**rămâne în mediu**, e o variabilă de sesiune — kdeinit și tot ce pornește
+o moștenesc, la fel copiii `KProcess`; o aplicație care rulează pe Wayland
+trimite prin klauncher serviciilor pornite `QT3_PLATFORM=wayland` și
+`WAYLAND_DISPLAY`-ul ei (cum trimit aplicațiile X11 `DISPLAY`). Aplicațiile
+fără GUI (`QApplication::Tty`: dcopserver, klauncher, kbuildsycoca) nu aleg
+platforma deloc: rămân pe codul X11, care atunci nu deschide display.
+După etapa D ordinea se inversează pentru `XDG_SESSION_TYPE=wayland`.
 
 ### 9.5 Pașii, fiecare verificabil
 1. Build-ul X11 din worktree (făcut: `wayland/Makefile.rt`, 0 avertismente)
@@ -357,3 +362,23 @@ D). După etapa D ordinea se inversează pentru `XDG_SESSION_TYPE=wayland`.
    și pe GNOME Wayland headless.
 - Regula fără avertismente rămâne: codul QWS importat se curăță
   (`-fpermissive` dispare).
+
+### 9.6 kdelibs pe Wayland (etapa D, primul pas: KWrite)
+- Un singur API nou: `static bool KApplication::isWayland()` (citește
+  `qt_wayland` al Qt, declarat *weak*: kdelibs merge și pe un Qt fără
+  backend Wayland, unde întoarce mereu false). Gărzile din kdelibs sunt pe
+  el; doar kdefx (sub kdecore) testează `qt_xdisplay() == 0`.
+- Pe Wayland, clasele X11-only sunt no-op: KWin (setteri goi, interogări
+  goale, `WindowInfo` invalid), KWinModule gol (un desktop, ecranul ca zonă
+  de lucru), KStartupInfo/KXMessages fără proprietăți și mesaje X,
+  KSelectionOwner/Watcher fără proprietar, KIPC, KRootProp, KGlobalAccel
+  (acțiunile există, tastele nu se iau; înlocuitor: portalul
+  GlobalShortcuts). KKeyServer/KKeyNative: harta tastaturii din xkbcommon
+  (keymap-ul implicit, RMLVO din `$XKB_DEFAULT_*`).
+- kdeinit fără `DISPLAY` dar cu `WAYLAND_DISPLAY`: socket-uri
+  `kdeinit_NODISPLAY` (numele pe care îl folosește și DCOP). kded pe
+  Wayland nu încarcă modulele marcate `X-KDE-Kded-X11Only=true`
+  (kdetrayproxy; în kdebase randrd, khotkeys).
+- Startup notification: partea de intrare e în Qt (`XDG_ACTIVATION_TOKEN`
+  la prima fereastră); cea de ieșire (token pentru aplicațiile pornite de
+  KRun/klauncher) urmează: Qt trebuie să ofere un token sincron.
