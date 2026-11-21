@@ -9,7 +9,8 @@
 #
 #   <package>: kde3-qt, kde3-kdelibs (needs kde3-qt), kde3-kdebase (needs
 #              kde3-qt and kde3-kdelibs), kde3-kdepim (needs kde3-qt,
-#              kde3-kdelibs and kde3-kdebase).  The packages a package needs are
+#              kde3-kdelibs and kde3-kdebase), kde3-kdegraphics (needs kde3-qt
+#              and kde3-kdelibs).  The packages a package needs are
 #              not taken from a repository: build them first; their
 #              packages in out/<distro>/ are installed into the container
 #              before the build or the test.
@@ -36,7 +37,7 @@ ARCH_IMAGE=${ARCH_IMAGE:-docker.io/library/archlinux:latest}
 FEDORA_IMAGE=${FEDORA_IMAGE:-registry.fedoraproject.org/fedora:latest}
 
 usage() {
-    sed -n '2,28p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,29p' "$0" | sed 's/^# \{0,1\}//'
     exit 1
 }
 
@@ -46,6 +47,7 @@ declare -A deps=(
     [kde3-kdelibs]="kde3-qt"
     [kde3-kdebase]="kde3-qt kde3-kdelibs"
     [kde3-kdepim]="kde3-qt kde3-kdelibs kde3-kdebase"
+    [kde3-kdegraphics]="kde3-qt kde3-kdelibs"
 )
 
 # --init: an init process that reaps orphans; without it, daemons that

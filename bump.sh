@@ -34,6 +34,7 @@ declare -A repo=(
     [kde3-kdelibs]=kde3-revival/kde3-kdelibs
     [kde3-kdebase]=kde3-revival/kde3-kdebase
     [kde3-kdepim]=kde3-revival/kde3-kdepim
+    [kde3-kdegraphics]=kde3-revival/kde3-kdegraphics
 )
 r=${repo[$pkg]:-}
 [[ -n $r ]] || { echo "unknown package $pkg" >&2; exit 1; }

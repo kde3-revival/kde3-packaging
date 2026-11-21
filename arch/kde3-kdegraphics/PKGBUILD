@@ -1,0 +1,67 @@
+# Maintainer: Serghei Amelian <serghei.amelian@gmail.com>
+#
+# kdegraphics 3.5.10 as maintained by kde3-revival (KView, KSnapshot and
+# KRuler only), installed in /opt/kde3.
+# Snapshot of a fixed commit; run ../../bump.sh kde3-kdegraphics to move to
+# the latest commit of the master branch (updates _commit, _date, pkgver,
+# pkgrel and sha256sums).
+#
+# kde3-qt and kde3-kdelibs are not in a repository: build them first
+# (../../build.sh does that with the packages in out/).
+
+pkgname=kde3-kdegraphics
+_commit=cb20689e741d52fad2d47937657c03a06db9aea4
+_date=20261121
+pkgver=3.5.10+git${_date}
+pkgrel=1
+pkgdesc='KDE 3.5 graphics programs (KView image viewer, KSnapshot, KRuler) maintained for kde3-revival'
+arch=(x86_64)
+url='https://github.com/kde3-revival/kde3-kdegraphics'
+license=('GPL-2.0-or-later AND LGPL-2.0-or-later AND GFDL-1.2-or-later')
+# The image formats KView reads and KSnapshot writes are those of kde3-qt
+# and kdelibs' kimgio plugins.  libxext: the Shape extension (KSnapshot
+# cuts shaped windows to their shape).
+depends=(kde3-kdelibs kde3-qt glibc libgcc libstdc++ libx11 libxext)
+makedepends=(cmake ninja)
+# kdebase's khotkeys binds the Print key to KSnapshot.
+optdepends=('kde3-kdebase: Print key starts KSnapshot (khotkeys)')
+source=("kde3-kdegraphics-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz")
+sha256sums=('ebd9f13e0c9234d3f3ec910c548c60a00ea911d7476a3e7fa46df0f34adac135')
+
+_prefix=/opt/kde3
+
+build() {
+  # The prefix, the library directory (/opt/kde3/lib) and the RUNPATH come
+  # from kdelibs' CMake package.  CMAKE_BUILD_TYPE=None: the distribution
+  # flags only.
+  cmake -S kde3-kdegraphics-${_commit} -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=None \
+    -DKDEGRAPHICS_WITH_XSHAPE=ON
+  grep -qx "CMAKE_INSTALL_PREFIX:PATH=${_prefix}" build/CMakeCache.txt ||
+    { error "configure: install prefix is not ${_prefix}"; return 1; }
+  # Fail instead of silently building without an optional feature.
+  local have
+  for have in HAVE_X11_EXTENSIONS_SHAPE_H; do
+    grep -q "^#define $have 1" build/config.h || { error "configure: $have not set"; return 1; }
+  done
+  cmake --build build
+}
+
+package() {
+  DESTDIR="${pkgdir}" cmake --install build
+
+  local src=kde3-kdegraphics-${_commit} root=${pkgdir}${_prefix}
+
+  local f
+  for f in bin/kview bin/ksnapshot bin/kruler lib/kde3/libkviewviewer.so \
+           lib/kde3/libkviewcanvas.so; do
+    [[ -e ${root}/$f ]] || { error "not built: $f"; return 1; }
+  done
+
+  # libkimageviewer is only used by KView's parts and installs no
+  # headers: its unversioned link is of no use.
+  rm "${root}/lib/libkimageviewer.so"
+
+  install -Dm644 ${src}/COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+  install -Dm644 ${src}/COPYING-DOCS "${pkgdir}/usr/share/licenses/${pkgname}/COPYING-DOCS"
+}
