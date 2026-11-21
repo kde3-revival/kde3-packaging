@@ -37,6 +37,8 @@ optdepends=('gdb: backtraces in the crash handler (DrKonqi)'
             'xorg-mkfontscale: fonts.dir for core X fonts installed with kfontinst'
             'networkmanager: the network applet of kicker'
             'nm-connection-editor: settings of the network applet (802.1X, WEP)'
+            'xdg-desktop-portal-gtk: file chooser, settings and other portals (kde3-portals.conf)'
+            'gnome-keyring: passwords of Chromium and Electron applications (libsecret), secret portal'
             'xorg-server: to run kdm')
 backup=(etc/pam.d/kde3
         etc/pam.d/kde3-np
@@ -52,12 +54,14 @@ source=("kde3-kdebase-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz"
         kde3.pam
         kde3-np.pam
         kde3.desktop
-        kde3-kdm.service)
+        kde3-kdm.service
+        kde3-portals.conf)
 sha256sums=('92f512ca0c7397847ce2b478995fa909041b6a2f729e814ea4feef110ff02f3f'
             '6553fec18adaadec5e3e8a9c5f1c1640a0a029caa0b3d19a7c9448214848d4ce'
             '971b0fa0177567ccd0864b0832f4f06b7f9d6813db8aa9054c8a5821f108f5cf'
-            '2ee18ee7ae5162d2185e80e5f0f2fff6a02b085c710a94174b7737aab330468a'
-            '3b7c70b3e48cfa9077ee6740458bf479b4f7a77e61caf23545babbb4256a3c54')
+            'f0150f739ff3d1550decc7279bb4da8fab94b2d609aadecaf87422e64301086f'
+            '3b7c70b3e48cfa9077ee6740458bf479b4f7a77e61caf23545babbb4256a3c54'
+            'e2e91eaecd8f7018f6066ed36e9fdeb53a127410623288d9ad118d4d8f4ac9c6')
 
 _prefix=/opt/kde3
 
@@ -125,9 +129,16 @@ package() {
 
   # "KDE 3.5" in the session list of display managers, and kdm as a
   # systemd service (it is not enabled; "systemctl enable kde3-kdm" makes
-  # it the display manager).
+  # it the display manager).  The session file's DesktopNames=KDE3;GNOME;
+  # becomes XDG_CURRENT_DESKTOP=KDE3:GNOME.
   install -Dm644 "${srcdir}/kde3.desktop" "${pkgdir}/usr/share/xsessions/kde3.desktop"
   install -Dm644 "${srcdir}/kde3-kdm.service" "${pkgdir}/usr/lib/systemd/system/kde3-kdm.service"
+
+  # xdg-desktop-portal's backends for that desktop (gtk, gnome-keyring for
+  # secrets, none for what needs GNOME Shell) instead of the
+  # gnome-portals.conf of the fallback desktop; xdg-desktop-portal does not
+  # search /opt/kde3.  The same file as kdebase's own kde3-portals.conf.
+  install -Dm644 "${srcdir}/kde3-portals.conf" "${pkgdir}/usr/share/xdg-desktop-portal/kde3-portals.conf"
 
   # Konsole's console fonts ("Linux", "Unicode") for fontconfig and so
   # Xft: fontconfig does not search the KDE data directory.

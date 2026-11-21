@@ -41,6 +41,18 @@ grep -a -q 'kde3' $KDEDIR/bin/kcheckpass || fail "kcheckpass does not use the PA
 exec_=$(sed -n 's/^Exec=//p' /usr/share/xsessions/kde3.desktop)
 [[ -x $exec_ ]] || fail "session Exec $exec_ is not executable"
 sh -n $KDEDIR/bin/startkde || fail "startkde has syntax errors"
+# XDG_CURRENT_DESKTOP=KDE3:GNOME, from the session file's DesktopNames, and
+# the portal backends for it (gtk, the GNOME keyring for secrets) instead
+# of the gnome-portals.conf of the fallback desktop.
+grep -qx 'DesktopNames=KDE3;GNOME;' /usr/share/xsessions/kde3.desktop ||
+    fail "kde3.desktop does not name the desktop KDE3;GNOME;"
+portalconf=/usr/share/xdg-desktop-portal/kde3-portals.conf
+[[ -f $portalconf ]] || fail "$portalconf missing"
+grep -qx 'default=gtk;' $portalconf || fail "kde3-portals.conf does not default to gtk"
+grep -qx 'org.freedesktop.impl.portal.Secret=gnome-keyring;' $portalconf ||
+    fail "kde3-portals.conf does not use gnome-keyring for secrets"
+grep -qx 'org.freedesktop.impl.portal.Screenshot=none;' $portalconf ||
+    fail "kde3-portals.conf does not switch off the GNOME Shell portals"
 # startkde sets up the root window and shows its errors with kstartupx
 # instead of xsetroot, xprop and xmessage.
 [[ -x $KDEDIR/bin/kstartupx ]] || fail "kstartupx missing"

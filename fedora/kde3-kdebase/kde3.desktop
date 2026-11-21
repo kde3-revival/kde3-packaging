@@ -4,3 +4,4 @@ Exec=/opt/kde3/bin/startkde
 TryExec=/opt/kde3/bin/startkde
 Name=KDE 3.5
 Comment=The K Desktop Environment 3.5 (kde3-revival)
+DesktopNames=KDE3;GNOME;

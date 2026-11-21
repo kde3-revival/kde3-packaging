@@ -24,6 +24,7 @@ Source1:        kde3.pam
 Source2:        kde3-np.pam
 Source3:        kde3.desktop
 Source4:        kde3-kdm.service
+Source5:        kde3-portals.conf
 # Builds with the OpenEXR 3.2 of Fedora 44 (harmless with newer ones).
 Patch0:         kde3-kdebase-exr-header.patch
 
@@ -79,6 +80,12 @@ Requires:       upower
 # its settings editor for what it does not set up itself (802.1X, WEP).
 Recommends:     NetworkManager
 Recommends:     nm-connection-editor
+# The session is XDG_CURRENT_DESKTOP=KDE3:GNOME: kde3-portals.conf makes
+# xdg-desktop-portal use the GTK backend (file chooser, settings, ...) and
+# the GNOME keyring (secret portal), which Chromium and the Electron
+# applications also keep their passwords in (libsecret).
+Recommends:     xdg-desktop-portal-gtk
+Recommends:     gnome-keyring
 # Run by startkde (xrdb) and kcontrol (xrdb, setxkbmap).  mkfontdir only
 # makes fonts.dir files for core X fonts installed with kfontinst.
 Recommends:     mkfontscale
@@ -189,9 +196,16 @@ ln -s ../../..%{kde3dir}/share/fontconfig/conf.avail/60-kde3-konsole-fonts.conf 
     %{buildroot}%{_sysconfdir}/fonts/conf.d/60-kde3-konsole-fonts.conf
 
 # "KDE 3.5" in the session list of display managers; kdm as a systemd
-# service.
+# service.  The session file's DesktopNames=KDE3;GNOME; becomes
+# XDG_CURRENT_DESKTOP=KDE3:GNOME.
 install -D -p -m644 %{SOURCE3} %{buildroot}%{_datadir}/xsessions/kde3.desktop
 install -D -p -m644 %{SOURCE4} %{buildroot}%{_unitdir}/kde3-kdm.service
+
+# xdg-desktop-portal's backends for that desktop (gtk, gnome-keyring for
+# secrets, none for what needs GNOME Shell) instead of the
+# gnome-portals.conf of the fallback desktop; xdg-desktop-portal does not
+# search /opt/kde3.  The same file as kdebase's own kde3-portals.conf.
+install -D -p -m644 %{SOURCE5} %{buildroot}%{_datadir}/xdg-desktop-portal/kde3-portals.conf
 
 # The file lists of the tree in /opt/kde3: kdm and its control center
 # module go into kde3-kdm, the headers and the unversioned links of the
@@ -250,6 +264,8 @@ sort -o devel.list devel.list
 %config(noreplace) %{_sysconfdir}/pam.d/kde3
 %config(noreplace) %{_sysconfdir}/fonts/conf.d/60-kde3-konsole-fonts.conf
 %{_datadir}/xsessions/kde3.desktop
+%dir %{_datadir}/xdg-desktop-portal
+%{_datadir}/xdg-desktop-portal/kde3-portals.conf
 
 %files devel -f devel.list
 
