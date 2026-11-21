@@ -6,16 +6,16 @@
 # kde3-qt is not in a repository: build it first (../../build.sh does that
 # with the packages in out/).
 
-%global commit     be0b03ad5f36f0217e6e26600814dc3b85393bce
+%global commit     bff1f449ec1abd03ba2a2b2fb2206ec79b975a46
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global date       20261120
+%global date       20261121
 
 %global kde3dir    /opt/kde3
 %global qtdir      /opt/kde3-qt
 
 Name:           kde3-kdelibs
 Version:        3.5.10+git%{date}
-Release:        3%{?dist}
+Release:        1%{?dist}
 Summary:        KDE 3.5 core libraries maintained for kde3-revival
 
 License:        LGPL-2.0-or-later AND GPL-2.0-or-later AND BSD-2-Clause AND GFDL-1.2-or-later
@@ -193,6 +193,9 @@ sed -i 's|^\(.*\)$|"\1"|' devel.list
 %{_libdir}/cmake/KDE3Libs
 
 %changelog
+* Sat Nov 21 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261121-1
+- Snapshot of kde3-revival/kde3-kdelibs commit bff1f44
+
 * Sat Nov 21 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261120-3
 - Snapshot of kde3-revival/kde3-kdelibs commit be0b03a
 
