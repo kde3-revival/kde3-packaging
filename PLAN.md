@@ -364,6 +364,19 @@ relicențiat explicit.
   kde3-wpepart, etapele 1–2 făcute); KHTML rămâne pentru mail, khelpcenter,
   pagini interne. Fedora nu are wpewebkit: pachet propriu.
 
+- Sincronizare browser (decizia userului, 22.11.2026; de pornit la reluare):
+  criptare end-to-end, zero-knowledge — cheie din parola de sincronizare
+  (Argon2id), fiecare înregistrare XChaCha20-Poly1305; dispozitiv nou cu
+  parola sau aprobat de unul existent (QR/cod), cheie de recuperare.
+  Bază: protocolul Firefox Sync (documentat, E2E, server propriu cu
+  syncstorage-rs) pentru bookmark-uri, parole, carduri (fără CVV, niciodată),
+  istoric, taburi — compatibil cu Firefox pe telefon. Bookmark-urile pot avea
+  și varianta Floccus (XBEL pe Google Drive/WebDAV/Git, compatibil Chrome).
+  Parolele/cardurile stau local în KWallet. Cookies: extensie proprie peste
+  aceeași criptare, DOAR opt-in per site, niciodată pentru bănci (riscul de
+  furt de sesiune; nici Chrome/Firefox nu le sincronizează). Integrare în
+  KWPEPart (parole din formulare, cookies WebKit) și Konqueror (bookmark-uri).
+
 ### 7.5 Desktop la distanță integrat în KWin („feature killer”)
 Scenariul: un laptop acasă, pornit permanent; la birou userul îl vrea pe unul
 dintre monitoare, azi prin NoMachine (aplicație separată, artificial). Ținta:
