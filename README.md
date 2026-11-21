@@ -178,3 +178,34 @@ the configure default), which the GIO/GDBus code of kdebase (sleep and
 hibernate in the logout dialog, through systemd-logind) and kdepim
 needs.  kdebase's volume applet of kicker uses libpulse (PulseAudio, or
 PipeWire's PulseAudio server).
+
+## wpewebkit, kde3-wpepart (Fedora)
+
+kde3-wpepart is Konqueror's WPE WebKit browser part.  Arch has
+`wpewebkit` in its repositories; Fedora retired its package in 2020
+(2.26.1), so `fedora/wpewebkit` builds the upstream release (the version
+Arch has) with a spec adapted from Fedora's `webkitgtk.spec` (same source
+tree): clang, Fedora's BuildRequires and flags, but only what the part
+needs -- the WPE 2.0 API with WPEPlatform (DRM, headless and Wayland
+platforms; the part has its own X11 platform), the bubblewrap sandbox, no
+legacy libwpe API (so no libwpe/wpebackend-fdo), no documentation,
+introspection, WebDriver, MiniBrowser or speech synthesis.  To keep the
+build within a desktop machine: no LTO, lld with one link job, at most
+one compile job per 3 GB of RAM, and no debuginfo packages
+(`rpmbuild --with debuginfo` for them).  It takes a few hours:
+
+    JOBS=6 ./build.sh fedora wpewebkit
+    ./build.sh fedora kde3-wpepart && ./build.sh test fedora kde3-wpepart
+
+On Arch, `./build.sh arch kde3-wpepart` takes wpewebkit from the
+repository.  kde3-wpepart's repository is not public yet: its tarball is
+made from a local clone (`CLONE=../kde3-wpepart ./bump.sh kde3-wpepart`).
+The test shows a local page with kwpeview under Xvfb (shared memory path)
+and checks the title and the colours; WebKit's sandbox is switched off
+there when the container has no user namespaces for bubblewrap.
+
+| Arch               | Fedora              | contents |
+|--------------------|---------------------|----------|
+| (wpewebkit, repo)  | wpewebkit           | libWPEWebKit-2.0, WPE{Web,Network,GPU}Process, injected bundle, inspector resources |
+|                    | wpewebkit-devel     | headers, .so link, pkg-config files wpe-webkit-2.0, wpe-platform(-drm/-headless/-wayland)-2.0, wpe-web-process-extension-2.0 |
+| kde3-wpepart       | kde3-wpepart        | libkwpepart (KPart, preferred over KHTML for text/html), its service and XML GUI file, kwpeview |

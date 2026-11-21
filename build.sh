@@ -11,7 +11,9 @@
 #              kde3-qt and kde3-kdelibs), kde3-kdepim (needs kde3-qt,
 #              kde3-kdelibs and kde3-kdebase), kde3-kdegraphics (needs kde3-qt
 #              and kde3-kdelibs), kde3-kdeutils (needs kde3-qt and
-#              kde3-kdelibs).  The packages a package needs are
+#              kde3-kdelibs), wpewebkit (Fedora only: Arch has it),
+#              kde3-wpepart (needs kde3-qt, kde3-kdelibs and, on Fedora,
+#              wpewebkit).  The packages a package needs are
 #              not taken from a repository: build them first; their
 #              packages in out/<distro>/ are installed into the container
 #              before the build or the test.
@@ -38,7 +40,7 @@ ARCH_IMAGE=${ARCH_IMAGE:-docker.io/library/archlinux:latest}
 FEDORA_IMAGE=${FEDORA_IMAGE:-registry.fedoraproject.org/fedora:latest}
 
 usage() {
-    sed -n '2,31p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,33p' "$0" | sed 's/^# \{0,1\}//'
     exit 1
 }
 
@@ -50,6 +52,8 @@ declare -A deps=(
     [kde3-kdepim]="kde3-qt kde3-kdelibs kde3-kdebase"
     [kde3-kdegraphics]="kde3-qt kde3-kdelibs"
     [kde3-kdeutils]="kde3-qt kde3-kdelibs"
+    [wpewebkit]=""
+    [kde3-wpepart]="kde3-qt kde3-kdelibs wpewebkit"
 )
 
 # Distribution packages a test needs besides the package itself (the
@@ -57,6 +61,8 @@ declare -A deps=(
 declare -A test_extra=(
     [arch:kde3-kdeutils]="xz zstd lz4 zip unzip 7zip unrar"
     [fedora:kde3-kdeutils]="xz zstd lz4 zip unzip 7zip"
+    [arch:kde3-wpepart]="xorg-xwd xorg-xwininfo netpbm python"
+    [fedora:kde3-wpepart]="xwd xwininfo netpbm-progs python3"
 )
 
 # --init: an init process that reaps orphans; without it, daemons that
@@ -177,6 +183,16 @@ esac
 [[ -f $recipe ]] || { echo "no such recipe: $recipe" >&2; exit 1; }
 
 [[ -v deps[$pkg] ]] || { echo "unknown package $pkg" >&2; exit 1; }
+# A dependency without a recipe for this distribution (wpewebkit on Arch)
+# is a distribution package: makepkg/dnf install it like any other.
+d_own=
+for d in ${deps[$pkg]}; do
+    if [[ $distro == arch && -f $top/arch/$d/PKGBUILD ]] ||
+       [[ $distro == fedora && -f $top/fedora/$d/$d.spec ]]; then
+        d_own+=" $d"
+    fi
+done
+deps[$pkg]=${d_own# }
 for d in ${deps[$pkg]}; do
     compgen -G "$top/out/$distro/$d/*.$([[ $distro == arch ]] && echo pkg.tar.zst || echo rpm)" >/dev/null ||
         { echo "$pkg needs $d: run ./build.sh $distro $d first" >&2; exit 1; }

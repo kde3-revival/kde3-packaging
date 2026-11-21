@@ -1,0 +1,50 @@
+# Maintainer: Serghei Amelian <serghei.amelian@gmail.com>
+#
+# kde3-wpepart, a WPE WebKit browser part for Konqueror (KDE 3.5,
+# kde3-revival), installed in /opt/kde3.
+# Snapshot of a fixed commit; run ../../bump.sh kde3-wpepart to move to the
+# latest commit of the master branch (updates _commit, _date, pkgver,
+# pkgrel and sha256sums).  The repository is not public yet: use
+# CLONE=../kde3-wpepart ../../bump.sh kde3-wpepart (tarball in out/sources/).
+#
+# kde3-qt and kde3-kdelibs are not in a repository: build them first
+# (../../build.sh does that with the packages in out/).
+
+pkgname=kde3-wpepart
+_commit=4eafdb560f324a865d82c97bb7018f22e3a7c8e0
+_date=20261121
+pkgver=0.1.0+git${_date}
+pkgrel=1
+pkgdesc='WPE WebKit browser part for Konqueror, maintained for kde3-revival'
+arch=(x86_64)
+url='https://github.com/kde3-revival/kde3-wpepart'
+license=('LGPL-2.1-or-later')
+depends=(kde3-kdelibs kde3-qt wpewebkit glib2 glibc libdrm libgcc libstdc++
+         libx11 libxcb libxext libxfixes libxpresent libxrandr)
+makedepends=(cmake ninja)
+optdepends=('kde3-kdebase: Konqueror, the browser the part is made for')
+source=("kde3-wpepart-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz")
+sha256sums=('c6bee20e26f90be6342de5527f12eced1d00fe0fb1671a8e90fa3c511c982b35')
+
+_prefix=/opt/kde3
+
+build() {
+  # The prefix, the library directory (/opt/kde3/lib) and the RUNPATH come
+  # from kdelibs' CMake package.  CMAKE_BUILD_TYPE=None: the distribution
+  # flags only.
+  cmake -S kde3-wpepart-${_commit} -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=None
+  grep -qx "CMAKE_INSTALL_PREFIX:PATH=${_prefix}" build/CMakeCache.txt ||
+    { error "configure: install prefix is not ${_prefix}"; return 1; }
+  cmake --build build
+}
+
+package() {
+  DESTDIR="${pkgdir}" cmake --install build
+
+  local root=${pkgdir}${_prefix} f
+  for f in lib/kde3/libkwpepart.so share/services/kwpepart.desktop \
+           share/apps/kwpepart/kwpepart.rc bin/kwpeview; do
+    [[ -e ${root}/$f ]] || { error "not built: $f"; return 1; }
+  done
+}
