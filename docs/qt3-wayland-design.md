@@ -16,6 +16,10 @@ butoane, cursoare, clipboard și selecția primară între procese. Verificat
 automat (39 de verificări) într-un GNOME Shell headless și manual pe t590
 (Fedora 44, GNOME 50.6, hardware real).
 
+**Decizie (2026-11-21): varianta B — o singură bibliotecă `libkde3-qt.so`
+care alege X11 sau Wayland la rulare** (un singur build KDE, un singur set de
+pachete). Arhitectura: §9.
+
 Capturi: `build/qt3-wayland-proto/shots3/` (headless, cu `RESULT.txt`) și
 `build/qt3-wayland-proto/shots-t590/` (hardware real, plus `rec-resize/`).
 
@@ -193,7 +197,7 @@ desenate cu primitive QPainter (hover; închiderea devine roșie), margine de
 |---|---|---|
 | A. Prototip Qt (făcut) | platforma QWS+Wayland, intrare completă, popup-uri, ramă, cursoare, clipboard + primară, activare, test headless + t590 | – |
 | B. Qt complet | DnD, damage tracking, `buffer_scale`/HiDPI, text-input-v3 (IME), `set_parent` pentru toate dialogurile, `show_window_menu`, `showMaximized/FullScreen/Minimized` din Qt → xdg, fonturi (HarfBuzz, accentele tăiate), AA pentru forme, `QWidget::grabMouse/Keyboard` (nu există pe Wayland: emulate în proces) | 2–3 săptămâni |
-| C. Decizia de ABI | bibliotecă separată `libqt-wl` (ABI `Q_WS_QWS`, KDE compilat de două ori) **sau** o singură bibliotecă cu platforma aleasă la rulare (X11 sau Wayland), cu `Q_WS_X11` păstrat pentru API și stub-uri pe Wayland. A doua e mai grea în Qt (două backend-uri de pictare și evenimente în același binar), dar evită dublarea kdelibs/kdebase | decizie + 1–2 săptămâni |
+| C. Platforma la rulare (decis: B) | o singură bibliotecă, ABI-ul X11 păstrat, backend-ul Wayland în spatele API-ului public, ales la pornire (§9) | 3–5 săptămâni (Qt) |
 | D. kdelibs „X11 opțional” | KApplication, KStartupInfo→xdg-activation, KGlobalAccel→portal, KSelectionOwner→D-Bus, KSystemTray→SNI, NETWM doar cu KWin-compozitor; ținta: KWrite, Konsole, KMail native pe GNOME | 3–5 săptămâni |
 | F. KWin ca compozitor Wayland | (1) compozitor nou peste wlroots cu logica de ferestre a KWin3 portată și decorațiile KWin3 (QWidget-uri) rulate ca client Qt3-Wayland intern; (2) pe termen scurt KWin3 rămâne WM X11 într-un Xwayland rootful (etapa 1, funcțională) | (1) 2–3 luni |
 | E. kicker/kdesktop | rol nou de suprafață în Qt: `WType_Desktop`/dock → `zwlr_layer_surface_v1`; taskbar pe foreign-toplevel, pager pe ext-workspace, systray SNI | 2–3 săptămâni, după F |
@@ -204,7 +208,8 @@ Xwayland rootful (`wayland-stage0-1.md`).
 
 ## 8. Întrebări deschise
 
-- ABI (etapa C) — de decis înainte de orice lucru în kdelibs.
+- ABI (etapa C): **decis — o singură bibliotecă, platforma aleasă la
+  rulare** (§9).
 - HiDPI: scalare întreagă prin `buffer_scale` (desen la 2×) vs. lăsat
   compozitorului (încețoșat).
 - Rama pe un KWin-compozitor: decorații de server, QWSManager oprit când
@@ -212,3 +217,143 @@ Xwayland rootful (`wayland-stage0-1.md`).
 - Pe GNOME, aplicațiile KDE native nu au taskbar/pager KDE (nu există
   foreign-toplevel): doar aplicații individuale; sesiunea KDE nativă cere
   propriul compozitor.
+
+## 9. O singură bibliotecă, platforma aleasă la rulare (decizia B)
+
+Revizuit după un review independent (ABI, performanța căii X11,
+fezabilitate); corecturile sunt incluse mai jos.
+
+### 9.1 Principii
+1. **ABI-ul public rămâne cel X11.** Qt și aplicațiile se compilează cu
+   `Q_WS_X11`; nicio clasă publică nu-și schimbă layout-ul, nu apar funcții
+   virtuale noi. Se adaugă doar funcții membre private nevirtuale și câmpuri
+   la **sfârșitul** structurilor alocate numai de Qt (`QPixmap::QPixmapData`
+   — doar date simple, e inițializată cu `memset`; `QWExtra`, `QTLWExtra`;
+   `QPainterPrivate`, care pe X11 nici nu e alocat). **Nu** se extinde
+   `QPaintDeviceX11Data` (struct public `Q_EXPORT`, construibil din afară).
+   Binarele KDE existente rămân valabile pe X11 fără recompilare.
+2. **Un flag global, citit o dată:** `bool qt_wayland` (`qplatform_p.h`),
+   fixat la începutul lui `qt_init` și niciodată schimbat.
+3. **Întâi date, abia apoi ramuri.** Unde codul X11 merge fără server dacă
+   staticele au valori potrivite, nu se adaugă nimic:
+   - pe Wayland toate staticele `x_app*` și tablourile per ecran
+     (`x11AppDepth/Cells/RootWindow/Colormap/Visual(screen)`, inline în
+     `qpaintdevice.h`, care altfel indexează tablouri nule) primesc un vizual
+     TrueColor 32 bpp fals și DPI 96 (pentru fonturi); doar `x_appdisplay`
+     rămâne NULL; `qt_use_xrender = false` oprește singur căile XRender din
+     Qt și KStyle;
+   - `QColor`: calea TrueColor din `qcolor_x11.cpp` merge fără display cu
+     `QColorScreenData` 8/8/8 — fără dispecer;
+   - `QRegion`: rămâne **doar** implementarea X11 (algoritmul e propriu,
+     Xlib intervine numai în `handle()`); `qregion_qws.cpp` dispare, iar
+     QGfx primește un accesor prieten la `QRegionPrivate` (numRects, rects,
+     extents). Atenție: QGfxRaster interpreta `handle()` ca propriul
+     `_XRegion` — ar fi citit o Region Xlib cu alt layout.
+4. **Ramuri doar unde X11 ar chema Xlib**, la intrarea funcției:
+   `QT_WL_DISPATCH( return foo_wl( ... ) );` (ramura X11 marcată
+   probabilă). Cost pe X11: o comparație cu o globală, perfect predictibilă,
+   în funcții care oricum fac apeluri Xlib (begin/end, update pen/brush/font,
+   clip, bitBlt, conversii QPixmap, geometria widgeturilor, o iterație de
+   buclă). **Primitivele QPainter nu primesc test nou:** un bit `WlDev` în
+   `QPainter::flags` (0x80000 e liber) intră în testele existente
+   `testf(ExtDev|VxF|WxF)`, deci calea X11 nu plătește nimic. Fonturile au
+   deja dispecer: tipul motorului (apel virtual).
+5. **Backend-ul Wayland = codul QWS al prototipului, mutat pe layout-ul
+   X11:** fișierele `*_qws.cpp` devin `*_wl.cpp` care definesc
+   `Clasa::metoda_wl(...)` (funcții private nevirtuale); clasele și
+   globalele locale cu nume comune (`QETWidget`, `QClipboardData`,
+   `QCursorData`, `QDesktopWidgetPrivate`, `QShapedPixmapWidget`,
+   `_XRegion`, `qt_init`, `qt_cleanup`, `bitBlt`, `copyBlt`,
+   `qt_button_down`, `qt_set/clear_paintevent_clipping`,
+   `qt_draw_background`, `qt_enter/leave_modal`, `qt_modal_state`, timerele,
+   handler-ele pre/postselect...) trec **toate** într-un namespace sau
+   primesc sufixul `_wl` — altfel simbolurile inline/weak se unesc la link
+   și o parte rulează codul celeilalte. Un build de control cu
+   `-flto -Wodr` raportează ce a scăpat.
+   Starea QWS:
+   - `QWidget`: regiunile (`req/alloc/paintable_region`, indexul și
+     revizia, `overlapping_children`) și masca → `QWidgetWlData` legată din
+     `QWExtra` (pe Wayland fiecare widget are extra); `QWSManager*` și
+     `decor_allocated_region` → la sfârșitul `QTLWExtra`;
+   - `QPainter`: `QGfx*` → `QPainterPrivate`, alocat numai pe Wayland;
+   - `QPixmap`: memoria, `clut`, `numcols`, `rw/rh`, `hasAlpha` → la
+     sfârșitul `QPixmapData`; `hd` rămâne 0;
+   - virtualele QWS (`graphicsContext/scanLine/bytesPerLine`, `qwsEvent`)
+     devin funcții interne care aleg după `devType()`;
+   - `WId`-urile Wayland încep de la 0x20000000 (nu pot fi XID-uri valide:
+     codul KDE dă `winId()` la Xlib).
+6. **Clasele interne QWS** (`QGfx*`, `QScreen`, `QWSDisplay`, `QWSManager`,
+   decorațiile, managerul de regiuni, serverul Wayland) se compilează aproape
+   neschimbate; `qlock.cpp` și `qregion_qws.cpp` dispar; definițiile
+   `QT_NO_QWS_*` din `wayland/gen/qconfig.h` se aplică doar acestor surse.
+
+### 9.2 Pe subsisteme
+| Subsistem | X11 (neschimbat) | Wayland (backend) |
+|---|---|---|
+| Inițializare | `qt_init` X11 | `qt_init`: `qt_choose_platform()`, apoi `qt_init_wl` (staticele false, serverul în proces, ecranul, decorația); constructorii `QApplication(Display*, ...)` forțează X11 |
+| Bucla de evenimente | bucla GLib (implicită în configurare) sau cea clasică | un `GSource` Wayland: `prepare` = `wl_display_prepare_read` + flush + `qt_wl_flush()`, `check`/`dispatch` = citire + evenimentele din coada QWS; în bucla clasică același hook în locul blocului X |
+| Widgeturi | `qwidget_x11.cpp` | `qwidget_wl.cpp`: doar top-level-urile au suprafețe, copiii sunt regiuni |
+| Pictare | `qpainter_x11.cpp` (GC, XRender, Xft) | `qpainter_wl.cpp` (QGfxRaster în memoria clientului), prin bitul `WlDev` |
+| Pixmap-uri | Pixmap pe server | memorie în client |
+| Fonturi | `QFontEngineXft` | `QFontEngineFT` nou pe clasa de bază X11 (motorul QWS e altă clasă și nu se poate refolosi ca atare) + ramuri în `qfontdatabase_x11.cpp` (inclus în `qfontdatabase.cpp`; ~98 de apeluri Xft/Fc/X, 52 de situri) și în `qfont.cpp` (18). **Etapa 4 din PLAN 7.1 (`QHbFont`) devine calea comună:** aceeași cache de fețe și shaping HarfBuzz pe ambele platforme; desenul diferă (`XftDrawGlyphSpec` vs blit alpha, apoi Cairo) |
+| Clipboard, DnD | `qclipboard_x11`, `qdnd_x11` | `qclipboard_wl` (`wl_data_device`, primară); DnD de făcut |
+| Cursoare, ecran | `qcursor_x11`, `qdesktopwidget_x11` | `*_wl` (cursor-shape, ieșirile Wayland) |
+| OpenGL | GLX | `QGLWidget` invalid pe Wayland (deocamdată) |
+
+Codul comun: ~183 de situri `Q_WS_X11` (cele mai multe inofensive pe
+Wayland, pentru că `x11Screen()`/`hd` sunt 0; periculoase: `XSetTransientForHint`
+în `qdialog.cpp`, `qsizegrip.cpp`, `x11_initialize_style` din
+`qapplication_x11.cpp`, `qpsprinter.cpp`, `qt_xfocusout_grab_counter` din
+`qmenubar.cpp`) și ~60 de situri `Q_WS_QWS` (qimage 13, qtextcodec 9,
+qpainter 8, qfont 8, qwidget 6) care pe Wayland trebuie să devină ramuri la
+rulare. Triere: ~2 zile.
+
+### 9.3 API-uri X11 pe Wayland
+`qt_xdisplay()`/`x11AppDisplay()` și `handle()` întorc NULL/0; celelalte
+statice au valorile false de la 9.1.3. `x11Event`/`x11EventFilter` nu mai
+sunt chemate, deci în KApplication tac KIPC și acceleratoarele globale
+(așteptat; vin înlocuitorii din etapa D). Măsurat în surse:
+- kdelibs: 38 de fișiere cu `qt_xdisplay/x11Display` (311 apeluri),
+  19 cu apeluri Xlib directe, 35 cu NETWM/`KWin::`;
+- kdebase: 101 fișiere (746 de apeluri), 48 cu Xlib direct, 56 cu NETWM;
+- kdepim: 4 fișiere.
+Cea mai mare parte a kdebase (kwin, kicker, kdesktop, ksmserver, kxkb,
+khotkeys, klipper, kcontrol/randr, kdm) e oricum X11-only sau înlocuită pe
+Wayland. În kdelibs cele ~38 de fișiere primesc gărzi `if (!qt_xdisplay())`
+sau ramuri Wayland: 1–2 săptămâni pentru „nu crapă”, plus etapa D pentru
+înlocuitori. Un `qt_wayland_display()` nou dă `wl_display*` pentru cine
+integrează.
+
+### 9.4 Alegerea platformei
+Doar variabila `QT3_PLATFORM=x11|wayland` (fără opțiune în linia de
+comandă: `KCmdLineArgs` refuză opțiunile Qt necunoscute). Altfel: **X11
+întâi** cât `DISPLAY` e setat (Xwayland în sesiunile Wayland), Wayland dacă
+lipsește `DISPLAY` și există `WAYLAND_DISPLAY`, și Wayland ca rezervă când
+`XOpenDisplay` eșuează și `WAYLAND_DISPLAY` există. Aplicațiile alese pot
+fi pornite cu `QT3_PLATFORM=wayland` din .desktop. Atenție: variabila se
+moștenește prin kdeinit/klauncher în procesele copil — fie e scoasă din
+mediu după citire, fie klauncher o gestionează explicit (de decis în etapa
+D). După etapa D ordinea se inversează pentru `XDG_SESSION_TYPE=wayland`.
+
+### 9.5 Pașii, fiecare verificabil
+1. Build-ul X11 din worktree (făcut: `wayland/Makefile.rt`, 0 avertismente)
+   și un display X de test fără serverul utilizatorului: Xwayland rootful
+   în compozitorul headless (`run-headless.sh --xwayland :84`).
+2. Clasele interne QWS și `*_wl.cpp` (redenumite) compilate în biblioteca
+   X11 fără să fie chemate; `-flto -Wodr`, `--no-undefined`. Verificare:
+   obiectele X11 neschimbate (objdump), `tests/textcheck` și
+   `tests/eventloop` identice.
+3. `qt_wayland`, alegerea platformei, staticele false, `qt_init_wl`
+   (conexiunea și GSource-ul). Verificare: un QApplication fără ferestre
+   pornește și iese pe Wayland.
+4. QPixmap în memorie, QPainter prin `WlDev`, adaptorul QRegion→QGfx.
+   Verificare: desen într-un pixmap, `convertToImage`, PNG comparat pixel cu
+   pixel cu același program pe X11 — partea cea mai sensibilă la ABI, fără
+   ferestre.
+5. Motorul FreeType și ramura din baza de fonturi; același test cu text.
+6. Widgeturi top-level cu backing store, regiunile copiilor, QWSManager,
+   apoi intrarea, popup-urile și clipboard-ul din prototip. Verificare
+   (obiectivul 1): același `libkde3-qt.so` rulează `wltest` pe X11 (`:84`)
+   și pe GNOME Wayland headless.
+- Regula fără avertismente rămâne: codul QWS importat se curăță
+  (`-fpermissive` dispare).
