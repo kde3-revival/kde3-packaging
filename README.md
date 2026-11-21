@@ -185,7 +185,9 @@ kde3-wpepart is Konqueror's WPE WebKit browser part.  Arch has
 `wpewebkit` in its repositories; Fedora retired its package in 2020
 (2.26.1), so `fedora/wpewebkit` builds the upstream release (the version
 Arch has) with a spec adapted from Fedora's `webkitgtk.spec` (same source
-tree): clang, Fedora's BuildRequires and flags, but only what the part
+tree) and one patch of kde3-wpepart's (`webkit/`: images a page scales
+down are sampled from mipmaps, the Skia backend otherwise aliases them):
+clang, Fedora's BuildRequires and flags, but only what the part
 needs -- the WPE 2.0 API with WPEPlatform (DRM, headless and Wayland
 platforms; the part has its own X11 platform), the bubblewrap sandbox, no
 legacy libwpe API (so no libwpe/wpebackend-fdo), no documentation,

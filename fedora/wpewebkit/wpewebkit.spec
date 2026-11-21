@@ -22,6 +22,12 @@
 #
 # Fedora's two webkitgtk patches are not needed: one fixes a race in
 # Source/WebKit/PlatformGTK.cmake (GTK port only), the other is for s390x.
+#
+# Patch0 (from kde3-wpepart's webkit/ directory, not upstream): the Skia
+# backend draws images with bilinear filtering and no mipmaps, so images
+# a page shows at less than half their size alias (photos, screenshots in
+# thumbnails); sample raster images that are scaled down from mipmaps
+# (trilinear), as the Cairo port's CAIRO_FILTER_GOOD did.
 
 %bcond_with debuginfo
 
@@ -55,7 +61,7 @@
 
 Name:           wpewebkit
 Version:        2.54.3
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        WPE WebKit web content engine library
 
 # The license tag and the comment in webkitgtk.spec (same source tree)
@@ -63,6 +69,8 @@ Summary:        WPE WebKit web content engine library
 License:        LGPL-2.1-only AND BSD-2-Clause AND BSD-3-Clause AND ISC AND bzip2-1.0.6 AND NCSA AND MIT AND GPL-2.0-only AND MPL-1.1 AND SunPro AND Apache-2.0 AND GPL-3.0-or-later WITH Bison-exception-2.2 AND GPL-3.0-or-later WITH Autoconf-exception-3.0 AND MPL-2.0 AND OFL-1.1 AND (AFL-2.0 OR GPL-2.0-or-later) AND BSD-Source-Code AND BSD-2-Clause-Views AND LGPL-2.1-or-later AND (NCSA OR MIT) AND Apache-2.0 WITH LLVM-exception AND ICU AND BSL-1.0
 URL:            https://wpewebkit.org/
 Source0:        https://wpewebkit.org/releases/wpewebkit-%{version}.tar.xz
+# Images scaled down by a page: sample from mipmaps (kde3-wpepart)
+Patch0:         0001-Skia-Sample-scaled-down-images-from-mipmaps.patch
 
 BuildRequires:  bison
 BuildRequires:  bubblewrap
@@ -242,5 +250,9 @@ export NINJA_STATUS="[%f/%t %es] "
 %{_libdir}/pkgconfig/wpe-platform-wayland-%{apiver}.pc
 
 %changelog
+* Sat Nov 21 2026 Serghei Amelian <serghei.amelian@gmail.com> - 2.54.3-2
+- Skia: sample scaled-down images from mipmaps (kde3-wpepart's patch):
+  images shown at less than half their size no longer alias
+
 * Sat Nov 21 2026 Serghei Amelian <serghei.amelian@gmail.com> - 2.54.3-1
 - WPE WebKit 2.54.3 for kde3-wpepart, adapted from Fedora's webkitgtk.spec
