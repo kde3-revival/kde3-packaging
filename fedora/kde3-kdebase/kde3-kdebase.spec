@@ -65,8 +65,13 @@ BuildRequires:  openldap-devel
 BuildRequires:  openssl-devel
 BuildRequires:  pam-devel
 BuildRequires:  pulseaudio-libs-devel
+BuildRequires:  upower-devel
 
 Requires:       kde3-kdelibs%{?_isa}
+# The media manager lists, mounts and ejects the storage devices through
+# UDisks2; the power applet of kicker asks UPower.
+Requires:       udisks2
+Requires:       upower
 # Run by startkde (xrdb) and kcontrol (xrdb, setxkbmap).  mkfontdir only
 # makes fonts.dir files for core X fonts installed with kfontinst.
 Recommends:     mkfontscale
@@ -133,12 +138,14 @@ manager.  It uses the PAM services kde3 and kde3-np.
     -DKDE3_WITH_LIBUSB=ON \
     -DKDEBASE_KONSOLE_FONTS=ON \
     -DKDEBASE_VOLUME_APPLET=ON \
-    -DKDEBASE_LOGIND_SLEEP=ON
+    -DKDEBASE_LOGIND_SLEEP=ON \
+    -DKDEBASE_UDISKS2=ON \
+    -DKDEBASE_POWER_APPLET=ON
 # Fail instead of silently building without an optional feature.
 for have in HAVE_PAM HAVE_SSL HAVE_XCOMPOSITE HAVE_XINERAMA HAVE_DPMS \
             HAVE_LIBSASL2 HAVE_XSCREENSAVER HAVE_DNSSD HAVE_SENSORS_SENSORS_H \
             HAVE_LIBUSB HAVE_XKB HAVE_XFT HAVE_XRENDER HAVE_XCURSOR HAVE_XTEST \
-            HAVE_XFIXES HAVE_LOGIND_SLEEP; do
+            HAVE_XFIXES HAVE_LOGIND_SLEEP COMPILE_UDISKS2BACKEND; do
     grep -q "^#define $have 1" %{__cmake_builddir}/config.h || { echo "configure: $have not set" >&2; exit 1; }
 done
 grep -q '^#define KDM_PAM_SERVICE "kde3"' %{__cmake_builddir}/config.h || { echo "configure: PAM service" >&2; exit 1; }
@@ -157,6 +164,7 @@ root=%{buildroot}%{kde3dir}
 for f in bin/kdm bin/kxkb bin/kompmgr bin/kfontinst bin/ksysguardd \
          lib/kde3/kio_smb.so lib/kde3/kio_ldap.so lib/kde3/exrthumbnail.so \
          lib/kde3/volume_panelapplet.so share/apps/kicker/applets/volumeapplet.desktop \
+         lib/kde3/kpowermanager_panelapplet.so share/apps/kicker/applets/kpowermanager.desktop \
          share/apps/konsole/fonts/fonts.dir \
          share/fontconfig/conf.avail/60-kde3-konsole-fonts.conf; do
     [ -e $root/$f ] || { echo "not built: $f" >&2; exit 1; }
