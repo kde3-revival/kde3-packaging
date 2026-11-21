@@ -286,6 +286,11 @@ Design complet făcut. Rezumat:
   `XftGlyphSpec`-uri sau randare proprie FreeType/Cairo).
 
 ### 7.2 Wayland (analiză făcută, pe baza fox2)
+- Decizie user (21.11.2026): pe X11 KWin respectă poziția/monitorul cerute de aplicații
+  (ex. KiCad își restaurează fiecare editor unde a fost) — NU le ignorăm ca GNOME;
+  utilizatorii KiCad se plâng tocmai că Wayland le strică setările. Pentru KWin
+  compozitor Wayland: suport pentru restaurarea poziției (xdg-session-management /
+  protocol propriu) ca aplicațiile să-și păstreze comportamentul de pe X11.
 Greul nu e Wayland, ci ieșirea din „o fereastră X per QWidget + Xlib direct”.
 Etape: 0) matrice de test pe Xwayland (GNOME/Plasma/sway); 1) sesiune KDE3
 completă în Xwayland rootful; 2) separarea curată a platformei (`Q_WS_*`);
