@@ -376,10 +376,19 @@ taskbar, meniu, KIO, drag and drop).
   chei, acces de la birou la laptopul de acasă (WireGuard/Tailscale sau
   releu), reconectare transparentă; protocol independent de X11, ca să meargă
   și cu KWin compozitor Wayland (7.2).
-- Etape: (1) desktopul întreg pe un monitor, gestionat de KWin: input,
-  clipboard, reconectare; (2) ferestre individuale ca proxy-uri locale, cu
-  meniuri, popup-uri, dialoguri; (3) drag and drop și fișiere prin KIO,
-  aplicațiile în meniul K; (4) sunet, notificări, tray, codare hardware.
+- Etape (decizia userului, 22.11.2026):
+  (1) PRIMA FAZĂ — înlocuitor NoMachine: monitorul secundar e oglinda
+      laptopului (desktopul și taskbar-ul lui, pe tot monitorul, ca o ieșire
+      virtuală gestionată de KWin, fără fereastră de aplicație); input,
+      reconectare transparentă; copy/paste în ambele direcții (text, imagini);
+      eventual drag and drop de fișiere între desktop-uri / file managere
+      (Konqueror local ↔ laptop), cu transferul prin KIO. Userul e deja
+      obișnuit cu modelul „monitorul = laptopul”.
+  (2) LA FINAL — ferestre detașabile: tot desktopul laptopului rămâne pe
+      monitorul secundar, dar o aplicație pornită acolo poate fi trasă pe
+      celălalt monitor și devine fereastră-proxy locală (taskbar, Alt+Tab,
+      overview); apoi aplicațiile laptopului în meniul K, sunet, notificări,
+      tray, codare hardware.
   Prototip posibil între două Xephyr-uri locale, apoi între mașina locală și
   t590.
 
