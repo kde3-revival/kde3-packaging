@@ -15,9 +15,9 @@ pkgdesc='Qt 3 toolkit maintained for kde3-revival'
 arch=(x86_64)
 url='https://github.com/kde3-revival/kde3-qt'
 license=('GPL-2.0-only OR GPL-3.0-only OR QPL-1.0')
-makedepends=(libcups fontconfig freetype2 glu libgl libice libjpeg-turbo libmng
-             libpng libsm libx11 libxcursor libxext libxft libxi libxinerama
-             libxmu libxrandr libxrender zlib libgcc libstdc++)
+makedepends=(libcups fontconfig freetype2 glib2 glu libgl libice libjpeg-turbo
+             libmng libpng libsm libx11 libxcursor libxext libxft libxi
+             libxinerama libxmu libxrandr libxrender zlib libgcc libstdc++)
 source=("kde3-qt-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz"
         kde3-qt.sh
         kde3-qt.csh)
@@ -61,6 +61,9 @@ build() {
   for feature in opengl cups xinerama xcursor xrandr xrender xftfreetype tablet; do
     grep -q "^CONFIG +=.* $feature\b" .qmake.cache || { error "configure: $feature not enabled"; return 1; }
   done
+  # The event loop runs on GLib's main context (the configure default), so
+  # that GIO/GDBus work in KDE programs (logind, udisks2).
+  grep -q '^# define QT_GLIB_EVENTLOOP$' include/qconfig.h || { error "configure: QT_GLIB_EVENTLOOP not defined"; return 1; }
   # The library, plugins and tools; "make" alone would also build the
   # tutorial and the examples, which are not packaged.
   make sub-tools
@@ -81,8 +84,8 @@ _stage() {
 package_kde3-qt() {
   pkgdesc='Qt 3 toolkit maintained for kde3-revival (libraries, plugins, headers and tools)'
   # libcups is loaded at run time (QLibrary) by the print dialog; glu is
-  # linked by programs built with CONFIG += opengl.
-  depends=(fontconfig freetype2 glibc glu libcups libgcc libgl libice
+  # linked by programs built with CONFIG += opengl; glib2: the event loop.
+  depends=(fontconfig freetype2 glib2 glibc glu libcups libgcc libgl libice
            libjpeg-turbo libmng libpng libsm libstdc++ libx11 libxcursor
            libxext libxft libxi libxinerama libxmu libxrandr libxrender zlib)
   optdepends=('kde3-qt-designer: Qt Designer, Qt Assistant and Qt Linguist'

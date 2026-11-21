@@ -25,6 +25,7 @@ BuildRequires:  make
 BuildRequires:  cups-devel
 BuildRequires:  fontconfig-devel
 BuildRequires:  freetype-devel
+BuildRequires:  glib2-devel
 BuildRequires:  libICE-devel
 BuildRequires:  libjpeg-turbo-devel
 BuildRequires:  libmng-devel
@@ -128,6 +129,9 @@ echo yes | ./configure -prefix %{qtdir}
 for feature in opengl cups xinerama xcursor xrandr xrender xftfreetype tablet; do
     grep -q "^CONFIG +=.* $feature\b" .qmake.cache || { echo "configure: $feature not enabled" >&2; exit 1; }
 done
+# The event loop runs on GLib's main context (the configure default), so
+# that GIO/GDBus work in KDE programs (logind, udisks2).
+grep -q '^# define QT_GLIB_EVENTLOOP$' include/qconfig.h || { echo "configure: QT_GLIB_EVENTLOOP not defined" >&2; exit 1; }
 
 # The library, plugins and tools; "make" alone would also build the
 # tutorial and the examples, which are not packaged.

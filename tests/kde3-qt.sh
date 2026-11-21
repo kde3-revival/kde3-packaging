@@ -54,6 +54,11 @@ for lib in libXft libXrender libXrandr libXcursor libXinerama libXi libGL libSM;
 done
 echo ok
 
+step "GLib event loop"
+grep -q '^# define QT_GLIB_EVENTLOOP$' "$QTDIR/include/qconfig.h" || fail "QT_GLIB_EVENTLOOP not in qconfig.h"
+ldd "$QTDIR/lib/libkde3-qt.so.3" | grep -q 'libglib-2\.0\.so' || fail "libkde3-qt is not linked to libglib-2.0"
+echo ok
+
 work=$(mktemp -d)
 cd "$work"
 
