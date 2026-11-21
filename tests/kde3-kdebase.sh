@@ -47,6 +47,29 @@ grep -E '^(SessionsDirs|ServerCmd|PidFile|Theme|UseTheme)=' $kdmconf/kdmrc || tr
 ! grep -rIl -e /builder/ -e /rpmbuild/ -e /pkg/ $kdmconf || fail "build directory in the kdm configuration"
 echo ok
 
+step "volume applet"
+for f in $KDEDIR/lib/kde3/volume_panelapplet.so $KDEDIR/share/apps/kicker/applets/volumeapplet.desktop; do
+    [[ -f $f ]] || fail "$f missing"
+done
+ldd $KDEDIR/lib/kde3/volume_panelapplet.so | grep -q 'libpulse\.so' || fail "volume applet not linked to libpulse"
+nm -D --defined-only $KDEDIR/lib/kde3/volume_panelapplet.so | grep -q ' T init$' ||
+    fail "volume applet does not export init()"
+echo ok
+
+step "Konsole's console fonts in fontconfig"
+link=/etc/fonts/conf.d/60-kde3-konsole-fonts.conf
+[[ -L $link ]] || fail "$link is not a symbolic link"
+[[ $(realpath "$link") == $KDEDIR/share/fontconfig/conf.avail/60-kde3-konsole-fonts.conf ]] ||
+    fail "$link points to $(readlink "$link")"
+fc=$(fc-list : family foundry file | grep "^$KDEDIR/share/apps/konsole/fonts/" || true)
+echo "$fc"
+grep -q 'console8x16.*:.*Console' <<<"$fc" || fail "fc-list does not find the console font console8x16"
+# "Misc Console" where FreeType makes long PCF family names (foundry +
+# family, Arch), "Console" with foundry Misc where it does not (Fedora).
+fc-list :foundry=Misc family | grep -qxE '(Misc )?Console' ||
+    fail "fc-list does not find the family \"Misc Console\" (or \"Console\", foundry Misc)"
+echo ok
+
 work=$(mktemp -d)
 cd "$work"
 export KDEHOME=$work/kdehome

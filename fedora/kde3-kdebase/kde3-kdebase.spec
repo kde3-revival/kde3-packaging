@@ -38,6 +38,7 @@ BuildRequires:  bzip2-devel
 BuildRequires:  cyrus-sasl-devel
 BuildRequires:  fontconfig-devel
 BuildRequires:  freetype-devel
+BuildRequires:  glib2-devel
 BuildRequires:  libsmbclient-devel
 BuildRequires:  libusb-compat-0.1-devel
 BuildRequires:  libX11-devel
@@ -63,6 +64,7 @@ BuildRequires:  openexr-devel
 BuildRequires:  openldap-devel
 BuildRequires:  openssl-devel
 BuildRequires:  pam-devel
+BuildRequires:  pulseaudio-libs-devel
 
 Requires:       kde3-kdelibs%{?_isa}
 # Run by startkde (xsetroot, xprop, xrdb, xmessage) and kcontrol (xrdb,
@@ -132,12 +134,14 @@ manager.  It uses the PAM services kde3 and kde3-np.
     -DKDE3_WITH_SAMBA=ON \
     -DKDE3_WITH_OPENEXR=ON \
     -DKDE3_WITH_LIBUSB=ON \
-    -DKDEBASE_KONSOLE_FONTS=ON
+    -DKDEBASE_KONSOLE_FONTS=ON \
+    -DKDEBASE_VOLUME_APPLET=ON \
+    -DKDEBASE_LOGIND_SLEEP=ON
 # Fail instead of silently building without an optional feature.
 for have in HAVE_PAM HAVE_SSL HAVE_XCOMPOSITE HAVE_XINERAMA HAVE_DPMS \
             HAVE_LIBSASL2 HAVE_XSCREENSAVER HAVE_DNSSD HAVE_SENSORS_SENSORS_H \
             HAVE_LIBUSB HAVE_XKB HAVE_XFT HAVE_XRENDER HAVE_XCURSOR HAVE_XTEST \
-            HAVE_XFIXES; do
+            HAVE_XFIXES HAVE_LOGIND_SLEEP; do
     grep -q "^#define $have 1" %{__cmake_builddir}/config.h || { echo "configure: $have not set" >&2; exit 1; }
 done
 grep -q '^#define KDM_PAM_SERVICE "kde3"' %{__cmake_builddir}/config.h || { echo "configure: PAM service" >&2; exit 1; }
@@ -155,13 +159,21 @@ root=%{buildroot}%{kde3dir}
 # Parts that are only built when their dependencies are found.
 for f in bin/kdm bin/kxkb bin/kompmgr bin/kfontinst bin/ksysguardd \
          lib/kde3/kio_smb.so lib/kde3/kio_ldap.so lib/kde3/exrthumbnail.so \
-         share/apps/konsole/fonts/fonts.dir; do
+         lib/kde3/volume_panelapplet.so share/apps/kicker/applets/volumeapplet.desktop \
+         share/apps/konsole/fonts/fonts.dir \
+         share/fontconfig/conf.avail/60-kde3-konsole-fonts.conf; do
     [ -e $root/$f ] || { echo "not built: $f" >&2; exit 1; }
 done
 
 # PAM services (the install hooks run mkpamserv only without DESTDIR).
 install -D -p -m644 %{SOURCE1} %{buildroot}%{_sysconfdir}/pam.d/kde3
 install -D -p -m644 %{SOURCE2} %{buildroot}%{_sysconfdir}/pam.d/kde3-np
+
+# Konsole's console fonts ("Linux", "Unicode") for fontconfig and so Xft:
+# fontconfig does not search the KDE data directory.
+install -d %{buildroot}%{_sysconfdir}/fonts/conf.d
+ln -s ../../..%{kde3dir}/share/fontconfig/conf.avail/60-kde3-konsole-fonts.conf \
+    %{buildroot}%{_sysconfdir}/fonts/conf.d/60-kde3-konsole-fonts.conf
 
 # "KDE 3.5" in the session list of display managers; kdm as a systemd
 # service.
@@ -223,6 +235,7 @@ sort -o devel.list devel.list
 %license COPYING COPYING-DOCS
 %doc README AUTHORS README.pam
 %config(noreplace) %{_sysconfdir}/pam.d/kde3
+%config(noreplace) %{_sysconfdir}/fonts/conf.d/60-kde3-konsole-fonts.conf
 %{_datadir}/xsessions/kde3.desktop
 
 %files devel -f devel.list
