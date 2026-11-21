@@ -52,6 +52,12 @@ BuildRequires:  libthai-devel
 BuildRequires:  libtiff-devel
 # kimgio's WebP plugin (kdelibs b825f3c and later)
 BuildRequires:  libwebp-devel
+# kimgio's HEIF, AVIF and JPEG XL plugins (kdelibs 6d08268, aa51ef9,
+# 2c4e2b1 and later).  Fedora's libheif has no HEVC decoder: HEIC images
+# need libheif-freeworld from RPM Fusion; AVIF is read with libavif.
+BuildRequires:  libheif-devel
+BuildRequires:  libavif-devel
+BuildRequires:  libjxl-devel
 BuildRequires:  libutempter-devel
 BuildRequires:  libX11-devel
 BuildRequires:  libXext-devel

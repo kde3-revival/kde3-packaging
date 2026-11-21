@@ -21,10 +21,11 @@ license=('LGPL-2.0-or-later AND GPL-2.0-or-later AND BSD-2-Clause AND GFDL-1.2-o
 # dcopserver; perl runs dcopidlng (kde3_use_dcopidlng() of other modules),
 # fileshareset and kconf_update scripts; libpng and zlib are needed by the
 # CMake package (find_dependency()).
-depends=(kde3-qt acl avahi bzip2 cairo fontconfig glib2 glibc krb5 libcups
-         libgcc libice libidn libjpeg-turbo libpng libpsl libpulse librsvg
-         libsm libsndfile libstdc++ libthai libtiff libutempter libwebp libx11 libxext
-         libxft libxml2 libxrender libxslt openssl pcre perl xorg-iceauth zlib)
+depends=(kde3-qt acl avahi bzip2 cairo fontconfig glib2 glibc krb5 libavif
+         libcups libgcc libheif libice libidn libjpeg-turbo libjxl libpng libpsl
+         libpulse librsvg libsm libsndfile libstdc++ libthai libtiff libutempter
+         libwebp libx11 libxext libxft libxml2 libxrender libxslt openssl pcre
+         perl xorg-iceauth zlib)
 makedepends=(cmake ninja)
 optdepends=('aspell: spell checking (KSpell)'
             'hspell: Hebrew spell checking (KSpell)'
