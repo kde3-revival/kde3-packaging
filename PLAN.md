@@ -346,8 +346,42 @@ relicențiat explicit.
   maildir-ul rămâne sursa de adevăr (flag-urile din numele fișierelor),
   baza e cache reconstruibil; tranzacții grupate pentru schimbări de stare.
 - KOrganizer/KAddressBook: CalDAV și CardDAV.
-- Konqueror ca browser: KPart nou pe CEF (Chromium Embedded), off-screen
-  rendering; KHTML rămâne pentru mail, khelpcenter, pagini interne.
+- Konqueror ca browser: KPart nou pe WPE WebKit (ales în locul CEF; repo
+  kde3-wpepart, etapele 1–2 făcute); KHTML rămâne pentru mail, khelpcenter,
+  pagini interne. Fedora nu are wpewebkit: pachet propriu.
+
+### 7.5 Desktop la distanță integrat în KWin („feature killer”)
+Scenariul: un laptop acasă, pornit permanent; la birou userul îl vrea pe unul
+dintre monitoare, azi prin NoMachine (aplicație separată, artificial). Ținta:
+ferestrele laptopului se comportă ca ferestre locale. Niciun alt DE nu are
+asta integrat (Xpra face ferestre „seamless” pe X11, dar fără integrare în WM,
+taskbar, meniu, KIO, drag and drop).
+- Sursa (laptopul): KWin redirecționează deja fiecare fereastră prin
+  XComposite (overview) și are damage tracking → trimite fiecare fereastră
+  separat, doar zonele modificate, plus metadatele NETWM (titlu, iconiță, tip,
+  transient-for, stare); inputul primit se injectează în fereastra respectivă.
+- Destinația (biroul): KWin creează pentru fiecare fereastră la distanță un
+  client-proxy gestionat ca unul local (taskbar, Alt+Tab, overview, decorații
+  locale cu marcaj „laptop”, maximizare, mutare între monitoare).
+- Integrare: drag and drop în ambele sensuri (punte XDND + transfer de fișiere
+  prin KIO/sftp), clipboard sincronizat (și imagini), aplicațiile laptopului
+  într-un submeniu K „Laptop” (pornite acolo, apar local), notificări, tray,
+  sunet (tunel PipeWire/Pulse), opțional imprimare.
+- Mod „monitor întreg”: tot desktopul laptopului pe un monitor, ca ieșire
+  virtuală a KWin (înlocuitorul direct al NoMachine) — prima etapă.
+- Dificultăți: latența meniurilor/popup-urilor/tooltip-urilor (poziționare
+  exactă); codare adaptivă pe zone (fără pierderi pentru text, H.264/AV1 cu
+  VAAPI pentru zone video); unde trăiesc ferestrele pe laptop (sesiunea reală,
+  eventual blocată, vs. o sesiune separată invizibilă); conexiune criptată cu
+  chei, acces de la birou la laptopul de acasă (WireGuard/Tailscale sau
+  releu), reconectare transparentă; protocol independent de X11, ca să meargă
+  și cu KWin compozitor Wayland (7.2).
+- Etape: (1) desktopul întreg pe un monitor, gestionat de KWin: input,
+  clipboard, reconectare; (2) ferestre individuale ca proxy-uri locale, cu
+  meniuri, popup-uri, dialoguri; (3) drag and drop și fișiere prin KIO,
+  aplicațiile în meniul K; (4) sunet, notificări, tray, codare hardware.
+  Prototip posibil între două Xephyr-uri locale, apoi între mașina locală și
+  t590.
 
 ## 7b. Release: Fedora Remix + COPR (după ce sesiunea e stabilă)
 Scop: prezentarea proiectului comunității (Fedora, r/linux, Hacker News) cu
