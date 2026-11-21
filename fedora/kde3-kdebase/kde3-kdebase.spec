@@ -65,9 +65,10 @@ BuildRequires:  openssl-devel
 BuildRequires:  pam-devel
 
 Requires:       kde3-kdelibs%{?_isa}
-# Run by startkde (xsetroot, xprop, xrdb, xset, xmessage, mkfontdir) and
-# kcontrol (xrdb, xset, setxkbmap).
-Requires:       mkfontscale
+# Run by startkde (xsetroot, xprop, xrdb, xmessage) and kcontrol (xrdb,
+# xset, setxkbmap).  mkfontdir only makes fonts.dir files for core X
+# fonts installed with kfontinst.
+Recommends:     mkfontscale
 Requires:       setxkbmap
 Requires:       xmessage
 Requires:       xprop

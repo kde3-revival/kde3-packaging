@@ -17,18 +17,21 @@ pkgdesc='KDE 3.5 desktop (kwin, kicker, kdesktop, konqueror, konsole, kcontrol, 
 arch=(x86_64)
 url='https://github.com/kde3-revival/kde3-kdebase'
 license=('GPL-2.0-or-later AND LGPL-2.0-or-later AND GFDL-1.2-or-later')
-# The X tools are run by startkde (xsetroot, xprop, xrdb, xset, xmessage,
-# mkfontdir), kcontrol (xrdb, xset, setxkbmap) and kdm (xauth).
+# The X tools are run by startkde (xsetroot, xprop, xrdb, xmessage),
+# kcontrol (xrdb, xset, setxkbmap) and kdm (xauth).  mkfontdir only makes
+# fonts.dir files for core X fonts (kfontinst; at build time for Konsole's
+# fonts).
 depends=(kde3-kdelibs kde3-qt avahi fontconfig freetype2
          glibc glu libgcc libgl libice libldap libsasl libsm libstdc++
          libusb-compat libx11 libxau libxcomposite libxcursor
          libxdamage libxdmcp libxext libxfixes libxft libxinerama libxkbfile
          libxrandr libxrender libxss libxtst lm_sensors openexr openssl pam
          perl smbclient zlib
-         xorg-mkfontscale xorg-setxkbmap xorg-xauth xorg-xmessage xorg-xprop
+         xorg-setxkbmap xorg-xauth xorg-xmessage xorg-xprop
          xorg-xrdb xorg-xset xorg-xsetroot)
-makedepends=(cmake ninja xorg-bdftopcf)
+makedepends=(cmake ninja xorg-bdftopcf xorg-mkfontscale)
 optdepends=('gdb: backtraces in the crash handler (DrKonqi)'
+            'xorg-mkfontscale: fonts.dir for core X fonts installed with kfontinst'
             'xorg-server: to run kdm')
 backup=(etc/pam.d/kde3
         etc/pam.d/kde3-np

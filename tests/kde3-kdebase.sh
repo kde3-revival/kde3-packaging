@@ -27,7 +27,7 @@ ls -l $KDEDIR/bin/kcheckpass $KDEDIR/bin/kdesud
 ldd $KDEDIR/bin/kcheckpass | grep -E 'kde3|not found' || true
 
 step "X tools run by startkde, kcontrol, kdm and dcopserver"
-for t in iceauth mkfontdir setxkbmap xauth xmessage xprop xrdb xset xsetroot; do
+for t in iceauth setxkbmap xauth xmessage xprop xrdb xset xsetroot; do
     command -v $t >/dev/null || fail "$t not installed"
 done
 echo ok
