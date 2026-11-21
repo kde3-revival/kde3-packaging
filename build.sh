@@ -10,7 +10,8 @@
 #   <package>: kde3-qt, kde3-kdelibs (needs kde3-qt), kde3-kdebase (needs
 #              kde3-qt and kde3-kdelibs), kde3-kdepim (needs kde3-qt,
 #              kde3-kdelibs and kde3-kdebase), kde3-kdegraphics (needs kde3-qt
-#              and kde3-kdelibs).  The packages a package needs are
+#              and kde3-kdelibs), kde3-kdeutils (needs kde3-qt and
+#              kde3-kdelibs).  The packages a package needs are
 #              not taken from a repository: build them first; their
 #              packages in out/<distro>/ are installed into the container
 #              before the build or the test.
@@ -37,7 +38,7 @@ ARCH_IMAGE=${ARCH_IMAGE:-docker.io/library/archlinux:latest}
 FEDORA_IMAGE=${FEDORA_IMAGE:-registry.fedoraproject.org/fedora:latest}
 
 usage() {
-    sed -n '2,29p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,31p' "$0" | sed 's/^# \{0,1\}//'
     exit 1
 }
 
@@ -48,6 +49,14 @@ declare -A deps=(
     [kde3-kdebase]="kde3-qt kde3-kdelibs"
     [kde3-kdepim]="kde3-qt kde3-kdelibs kde3-kdebase"
     [kde3-kdegraphics]="kde3-qt kde3-kdelibs"
+    [kde3-kdeutils]="kde3-qt kde3-kdelibs"
+)
+
+# Distribution packages a test needs besides the package itself (the
+# optional tools it exercises).
+declare -A test_extra=(
+    [arch:kde3-kdeutils]="xz zstd lz4 zip unzip 7zip unrar"
+    [fedora:kde3-kdeutils]="xz zstd lz4 zip unzip 7zip"
 )
 
 # --init: an init process that reaps orphans; without it, daemons that
@@ -57,6 +66,7 @@ run() {   # run <image> <script> [extra podman args...]
     local image=$1 script=$2; shift 2
     podman run --rm -i --init --security-opt label=disable \
         -e JOBS="$JOBS" -e PKG="$pkg" -e DEPS="${deps[$pkg]}" \
+        -e EXTRA="${test_extra[$distro:$pkg]:-}" \
         -v "$top:/src:ro" -v "$out:/out" -v "$top/out/$distro:/deps:ro" \
         -v "$top/out/sources:/sources:ro" "$@" \
         "$image" bash -euo pipefail -c "$script"
@@ -97,7 +107,7 @@ cp *.pkg.tar.zst namcap.log /out/
 '
 
 arch_test='
-pacman -Syu --noconfirm --needed gcc make cmake pkgconf xorg-server-xvfb >/dev/null
+pacman -Syu --noconfirm --needed gcc make cmake pkgconf xorg-server-xvfb $EXTRA >/dev/null
 DEPS="$DEPS $PKG"
 '$arch_deps'
 useradd -m tester
@@ -144,7 +154,7 @@ cp /home/builder/rpmbuild/RPMS/*/*.rpm /home/builder/rpmbuild/SRPMS/*.rpm \
 '
 
 fedora_test='
-dnf -y -q install gcc-c++ make cmake pkgconf-pkg-config xorg-x11-server-Xvfb >/dev/null
+dnf -y -q install gcc-c++ make cmake pkgconf-pkg-config xorg-x11-server-Xvfb $EXTRA >/dev/null
 DEPS="$DEPS $PKG"
 '$fedora_deps'
 useradd -m tester

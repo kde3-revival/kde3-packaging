@@ -17,11 +17,11 @@ Distribution packages for the kde3-revival projects.
     ./build.sh test fedora kde3-qt    # container and run tests/kde3-qt.sh
 
 The packages are built in dependency order: kde3-qt, kde3-kdelibs,
-kde3-kdebase, kde3-kdepim, kde3-kdegraphics.  A package's kde3-revival dependencies are not taken from a
+kde3-kdebase, kde3-kdepim, kde3-kdegraphics, kde3-kdeutils.  A package's kde3-revival dependencies are not taken from a
 repository but installed into the container from `out/<distro>/`, so
 build those first:
 
-    for p in kde3-qt kde3-kdelibs kde3-kdebase kde3-kdepim kde3-kdegraphics; do
+    for p in kde3-qt kde3-kdelibs kde3-kdebase kde3-kdepim kde3-kdegraphics kde3-kdeutils; do
         ./build.sh arch $p && ./build.sh test arch $p
     done
 
@@ -33,7 +33,7 @@ user inside the container; `JOBS` sets the parallelism (default `nproc`).
 
 Packages are snapshots of a fixed upstream commit, versioned
 `<version>+git<YYYYMMDD>` (3.3.8b for kde3-qt, 3.5.10 for kdelibs,
-kdebase, kdepim and kdegraphics; committer date of the commit, UTC).  To move to the current head
+kdebase, kdepim, kdegraphics and kdeutils; committer date of the commit, UTC).  To move to the current head
 of master (or a given commit):
 
     ./bump.sh <package> [commit]
@@ -42,8 +42,8 @@ This updates the commit, date, checksums and pkgrel/Release (back to 1, or
 +1 when the new commit has the same date) in both recipes and adds a Fedora
 changelog entry; review with `git diff` and commit.
 
-A repository that cannot be downloaded (kde3-kdepim and kde3-kdegraphics
-are private for now) is taken from a local clone:
+A repository that cannot be downloaded (kde3-kdepim, kde3-kdegraphics and
+kde3-kdeutils are private for now) is taken from a local clone:
 
     CLONE=../kde3-kdepim ./bump.sh kde3-kdepim
 
@@ -134,6 +134,7 @@ bit of scripts).
 | kde3-kdepim        | kde3-kdepim         | KMail, KOrganizer, KAddressBook, Kontact, Kleopatra, KWatchGnuPG, KMailCvt, imap4/sieve/mbox ioslaves, libraries |
 |                    | kde3-kdepim-devel   | headers and .so links of libkcal, libkmime, mimelib, libkdepim, gpgme++, Kleo, ... |
 | kde3-kdegraphics   | kde3-kdegraphics    | KView (+ viewer part and plugins), KSnapshot, KRuler, their handbooks |
+| kde3-kdeutils      | kde3-kdeutils       | Ark (+ part), KCalc, KCharSelect, KDiskFree/KwikDisk (+ kcm_kdf), KHexEdit (+ khexedit2 part), KTimer, KWalletManager (+ kcm_kwallet), their handbooks |
 
 On Fedora kdm is a sub-package of its own, so that installing the desktop
 for a session started from GDM/SDDM does not install a second display
@@ -158,6 +159,19 @@ KSnapshot through khotkeys of kde3-kdebase (an optional dependency /
 Recommends).  The unversioned link of libkimageviewer (used only by
 KView's parts, no headers) is not packaged, so there is no -devel
 package.
+
+kde3-kdeutils is Ark, KCalc, KCharSelect, KDiskFree, KHexEdit, KTimer
+and KWalletManager; it needs no more than kdelibs (and GMP for KCalc).
+Ark drives the archivers on the command line: tar, gzip and bzip2 are
+dependencies, xz, zstd, lz4, zip/unzip, 7zip (7z, 7za or 7zz), unrar and
+lzop optional ones (Fedora: Recommends; unrar, which Fedora does not
+have, and lzop: Suggests).  Ark's xz, zstd and lz4 formats need the mime
+types kdelibs has since 2026-11-21.  KDiskFree mounts and unmounts
+through udisksctl when udisks2 is installed.  The test also runs Ark
+round trips (create, list, extract) for each format whose tool is
+installed in the test container.  The unversioned link of
+libkhexeditcommon (used only by the khexedit2 part, no headers) is not
+packaged, so there is no -devel package.
 
 kde3-qt runs its event loop on GLib's main context (QT_GLIB_EVENTLOOP,
 the configure default), which the GIO/GDBus code of kdebase (sleep and
