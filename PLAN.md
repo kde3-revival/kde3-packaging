@@ -267,6 +267,24 @@ Design complet făcut. Rezumat:
   pattern), `cairo_show_glyphs`; aceleași glyph id-uri.
 - Pentru teste: `xorg-server-xvfb`, `xdotool`, `harfbuzz-utils`.
 
+- **Stare (22.11):** etapa 1 harness `tests/textcheck` (a237a55, f8de94e),
+  etapa 2 pkg-config + detecție HarfBuzz 15.1 (badbfe6, f539694; glife în
+  harness 0109fc5, 2060ae6), etapa 3 `XftDrawGlyphSpec` cu pozițiile Qt
+  (8084801, cu review; 168 imagini mai închise doar la suprapuneri).
+  Urmează etapa 4 `QHbFont` (avansuri identice cu Xft, verificate pe tot
+  corpusul). De reparat pe drum: offset-urile neinițializate după
+  `QTextEngine::reallocate`; în `recalcAdvances` scalarea `_scale` e în
+  bucla per glifă. Defecte existente găsite de harness: cursor în mijlocul
+  perechilor surogat, lățimi diferite între QFontMetrics/QTextLayout/
+  QTextEdit (jamo, surogate, ebraică), boundingRect care taie cerneala,
+  fallback-uri cu mărime greșită (de dat FC_PIXEL_SIZE în QHbFont).
+- **Obiectiv explicit: poziționare fracționară a glifelor.** Diferența
+  vizibilă față de GNOME nu vine din setările de hinting (fontconfig de pe
+  Arch dă deja slight + lcddefault), ci din faptul că Qt3 pune glifele pe
+  pixeli întregi cu avansuri hintate; GTK4 folosește poziții fracționare
+  și metrici nehintate. De făcut în etapa HarfBuzz/Cairo (26.6 în
+  `XftGlyphSpec`-uri sau randare proprie FreeType/Cairo).
+
 ### 7.2 Wayland (analiză făcută, pe baza fox2)
 Greul nu e Wayland, ci ieșirea din „o fereastră X per QWidget + Xlib direct”.
 Etape: 0) matrice de test pe Xwayland (GNOME/Plasma/sway); 1) sesiune KDE3
