@@ -278,6 +278,22 @@ relicențiat explicit.
 - Mixer de volum nou în kdebase (libpulse, merge pe PipeWire), în locul KMix.
 - Multi-monitor: kcm nou pe RandR 1.2+ (aranjare, primar, mod per ieșire,
   profiluri la hotplug).
+  Până atunci: `~/.kde/env/monitors.sh` cu `xrandr` (sursat de `startkde`).
+- Desktopuri virtuale independente pe fiecare monitor (kwin, opțiune,
+  implicit oprită). Pager-ul are deja „Only This Screen” (kdebase aad01a2),
+  iar taskbar-ul `ShowCurrentScreenOnly`, dar desktopul curent e încă comun.
+  - EWMH are un singur `_NET_CURRENT_DESKTOP`; kwin ar ține câte un desktop
+    curent pe monitor și l-ar publica într-o proprietate proprie (ex.
+    `_KDE_SCREEN_CURRENT_DESKTOPS`); `_NET_CURRENT_DESKTOP` rămâne desktopul
+    monitorului activ, pentru programele care nu știu de ea.
+  - Schimbarea desktopului ascunde/arată doar ferestrele monitorului
+    respectiv; o fereastră mutată pe alt monitor preia desktopul lui.
+  - Adaptate: pager, taskbar, scurtăturile (Ctrl+F1…: monitorul cu mouse-ul
+    sau cu fereastra activă), kcm-ul de desktopuri.
+  - Cazuri grele: ferestre întinse pe două monitoare, „pe toate
+    desktopurile”, dialoguri tranzitorii, restaurarea sesiunii.
+  - Câteva zile de lucru, risc de regresii în comportamentul de bază; după
+    ce sesiunea e stabilă. Pentru Wayland: gândit din start în compozitor.
 - Text: vezi 7.1.
 
 ### 7.4 Aplicații
