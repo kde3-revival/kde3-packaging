@@ -349,6 +349,35 @@ relicențiat explicit.
 - Konqueror ca browser: KPart nou pe CEF (Chromium Embedded), off-screen
   rendering; KHTML rămâne pentru mail, khelpcenter, pagini interne.
 
+## 7b. Release: Fedora Remix + COPR (după ce sesiunea e stabilă)
+Scop: prezentarea proiectului comunității (Fedora, r/linux, Hacker News) cu
+un ISO live instalabil și un depozit de pachete.
+- **COPR:** pachetele construite automat din git pentru Fedora curentă și
+  precedentă (rețetele din `fedora/` există deja; `CLONE=` doar până devin
+  publice toate repo-urile). Instalare: `dnf copr enable …` + `dnf install
+  kde3-kdebase …`.
+- **ISO live (Fedora Remix):** kiwi-ng (uneltele spin-urilor Fedora):
+  depozitul COPR, KDE 3, display manager (LightDM sau kdm), Anaconda pentru
+  instalare, Firefox ca browser de rezervă lângă Konqueror/WPE. Testat pe
+  t590 și în VM prin harness.
+- **Marcă și licențe:** numele „Fedora Remix” e permis; dacă modificăm
+  pachete cu branding Fedora → `generic-logos`. Fără „Fedora” în numele
+  produsului. Pe ISO nimic ne-liber (unrar, codecuri: doar opțional din
+  depozite externe; HEIC cere libheif-freeworld din RPM Fusion).
+- **Ce trebuie gata înainte:** sesiunea (desktop, Konsole, KMail, utilitare,
+  sleep/shutdown, rețea NM, UDisks2, sunet, baterie, overview, panou pe toate
+  monitoarele), browserul WPE la nivel decent, o listă onestă de securitate
+  (ce e vechi: KHTML, codul KDE 3; ce s-a modernizat: TLS, KConfig $(…),
+  kdm, kimgio, KMail), câteva săptămâni de folosire zilnică.
+- **De pregătit pentru prezentare:** pagină cu capturi și funcții, răspunsul
+  la „de ce nu Trinity (TDE)?” (CMake curat, Qt3 reparat cu buclă GLib/
+  HarfBuzz/calea Wayland, logind/UDisks2/NetworkManager/PipeWire native,
+  KMail reparat (indexuri, standby), review de securitate cu CVE-uri,
+  overview modern), instrucțiuni COPR, link ISO.
+- **Identitatea sesiunii:** `DesktopNames=KDE3;GNOME;` (decis 22.11, „cel puțin
+  pentru început”), `kde3-portals.conf` (backend gtk), autostart XDG cu filtru
+  (fără intrările „doar GNOME”).
+
 ## 8. Decizii respinse (pe scurt, ca să nu se reia)
 - Migrarea KDE3 la Qt4/5/6 sau un strat de compatibilitate Qt3→Qt6.
 - clang-format pe sursele KDE (poate mai târziu, un singur commit verificat).
