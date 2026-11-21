@@ -112,7 +112,11 @@ Files outside `/opt/kde3`:
   create services with mkpamserv when installing without DESTDIR;
   `/usr/share/xsessions/kde3.desktop` ("KDE 3.5" in the session list of
   display managers) and the systemd unit `kde3-kdm.service` (not enabled;
-  not "kdm.service", which Fedora's kdm-settings has).
+  not "kdm.service", which Fedora's kdm-settings has), and the link
+  `/etc/fonts/conf.d/60-kde3-konsole-fonts.conf` to the fontconfig file
+  kdebase installs in `/opt/kde3/share/fontconfig/conf.avail`, so that
+  fontconfig (and so Konsole through Xft) finds Konsole's console fonts
+  ("Misc Console", "Misc Fixed" 9x15).
 
 Setuid/setgid programs (set by the recipes, as the install hooks only
 work as root): kgrantpty, start_kdeinit, kpac_dhcp_helper (setuid root,
@@ -142,5 +146,12 @@ gpg-agent) is a dependency as well: the crypto backends run it through
 gpgme and, for KMail's classic OpenPGP support, directly.  kdepim is
 built with cyrus-sasl (required: sieve, imap4 authentication), without
 gnokii (mobile phones in KAddressBook; its service file is removed, as
-the filter is not built) and without the experimental full-text index
-of KMail (indexlib).
+the filter is not built), without the experimental full-text index
+of KMail (indexlib) and with logind support (GIO: KMail disconnects
+before the machine sleeps).
+
+kde3-qt runs its event loop on GLib's main context (QT_GLIB_EVENTLOOP,
+the configure default), which the GIO/GDBus code of kdebase (sleep and
+hibernate in the logout dialog, through systemd-logind) and kdepim
+needs.  kdebase's volume applet of kicker uses libpulse (PulseAudio, or
+PipeWire's PulseAudio server).
