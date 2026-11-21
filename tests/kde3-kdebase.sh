@@ -27,7 +27,7 @@ ls -l $KDEDIR/bin/kcheckpass $KDEDIR/bin/kdesud
 ldd $KDEDIR/bin/kcheckpass | grep -E 'kde3|not found' || true
 
 step "X tools run by startkde, kcontrol, kdm and dcopserver"
-for t in iceauth setxkbmap xauth xmessage xprop xrdb xset xsetroot; do
+for t in iceauth setxkbmap xauth xmessage xrdb; do
     command -v $t >/dev/null || fail "$t not installed"
 done
 echo ok
@@ -41,6 +41,9 @@ grep -a -q 'kde3' $KDEDIR/bin/kcheckpass || fail "kcheckpass does not use the PA
 exec_=$(sed -n 's/^Exec=//p' /usr/share/xsessions/kde3.desktop)
 [[ -x $exec_ ]] || fail "session Exec $exec_ is not executable"
 sh -n $KDEDIR/bin/startkde || fail "startkde has syntax errors"
+# startkde sets up the root window and shows its errors with kstartupx
+# instead of xsetroot, xprop and xmessage.
+[[ -x $KDEDIR/bin/kstartupx ]] || fail "kstartupx missing"
 kdmconf=$KDEDIR/share/config/kdm
 ls $kdmconf
 grep -E '^(SessionsDirs|ServerCmd|PidFile|Theme|UseTheme)=' $kdmconf/kdmrc || true

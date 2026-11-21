@@ -67,16 +67,11 @@ BuildRequires:  pam-devel
 BuildRequires:  pulseaudio-libs-devel
 
 Requires:       kde3-kdelibs%{?_isa}
-# Run by startkde (xsetroot, xprop, xrdb, xmessage) and kcontrol (xrdb,
-# xset, setxkbmap).  mkfontdir only makes fonts.dir files for core X
-# fonts installed with kfontinst.
+# Run by startkde (xrdb) and kcontrol (xrdb, setxkbmap).  mkfontdir only
+# makes fonts.dir files for core X fonts installed with kfontinst.
 Recommends:     mkfontscale
 Requires:       setxkbmap
-Requires:       xmessage
-Requires:       xprop
 Requires:       xrdb
-Requires:       xset
-Requires:       xsetroot
 Suggests:       kde3-kdm
 # DrKonqi runs gdb for the backtrace of a crashed program.
 Suggests:       gdb
@@ -105,6 +100,8 @@ kdeaddons.
 Summary:        KDE 3.5 display manager (kdm) for kde3-revival
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 Requires:       xorg-x11-xauth
+# kdm's Xsession shows its errors with xmessage.
+Requires:       xmessage
 Recommends:     xorg-x11-server-Xorg
 
 %description -n kde3-kdm
