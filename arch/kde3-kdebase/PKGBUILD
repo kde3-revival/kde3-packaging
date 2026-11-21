@@ -9,10 +9,10 @@
 # (../../build.sh does that with the packages in out/).
 
 pkgname=kde3-kdebase
-_commit=369a7069ed2013d71d8b8fb41019444a4e44a71a
+_commit=16a5a87d960844b5f9d604f149a0cda22c74fd4b
 _date=20261121
 pkgver=3.5.10+git${_date}
-pkgrel=1
+pkgrel=2
 pkgdesc='KDE 3.5 desktop (kwin, kicker, kdesktop, konqueror, konsole, kcontrol, kdm, ...) maintained for kde3-revival'
 arch=(x86_64)
 url='https://github.com/kde3-revival/kde3-kdebase'
@@ -48,7 +48,7 @@ source=("kde3-kdebase-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz"
         kde3-np.pam
         kde3.desktop
         kde3-kdm.service)
-sha256sums=('1f45d994c3a166253ac2527316246689b4952b6b3617353b8d69f0bc567dd2f5'
+sha256sums=('92f512ca0c7397847ce2b478995fa909041b6a2f729e814ea4feef110ff02f3f'
             '6553fec18adaadec5e3e8a9c5f1c1640a0a029caa0b3d19a7c9448214848d4ce'
             '971b0fa0177567ccd0864b0832f4f06b7f9d6813db8aa9054c8a5821f108f5cf'
             '2ee18ee7ae5162d2185e80e5f0f2fff6a02b085c710a94174b7737aab330468a'

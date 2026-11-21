@@ -6,7 +6,7 @@
 # kde3-qt and kde3-kdelibs are not in a repository: build them first
 # (../../build.sh does that with the packages in out/).
 
-%global commit     369a7069ed2013d71d8b8fb41019444a4e44a71a
+%global commit     16a5a87d960844b5f9d604f149a0cda22c74fd4b
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 %global date       20261121
 
@@ -14,7 +14,7 @@
 
 Name:           kde3-kdebase
 Version:        3.5.10+git%{date}
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        KDE 3.5 desktop maintained for kde3-revival
 
 License:        GPL-2.0-or-later AND LGPL-2.0-or-later AND GFDL-1.2-or-later
@@ -242,6 +242,9 @@ sort -o devel.list devel.list
 %{_unitdir}/kde3-kdm.service
 
 %changelog
+* Sat Nov 21 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261121-2
+- Snapshot of kde3-revival/kde3-kdebase commit 16a5a87
+
 * Sat Nov 21 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261121-1
 - Snapshot of kde3-revival/kde3-kdebase commit 369a706
 
