@@ -3,7 +3,7 @@
 # latest commit of the master branch (updates commit, date, Release, the
 # changelog and the "sources" checksum file).
 
-%global commit     3d84a375bc784066513f9fb9476685e16845e0eb
+%global commit     00644b6122bada34da671f646c5825d9268d1301
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 %global date       20261121
 
@@ -11,7 +11,7 @@
 
 Name:           kde3-qt
 Version:        3.3.8b+git%{date}
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Qt 3 toolkit maintained for kde3-revival
 
 License:        GPL-2.0-only OR GPL-3.0-only OR QPL-1.0
@@ -215,6 +215,9 @@ ln -s ../../..%{qtdir}/lib/pkgconfig/kde3-qt.pc %{buildroot}%{_libdir}/pkgconfig
 %{qtdir}/man/man3
 
 %changelog
+* Sat Nov 21 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.3.8b+git20261121-2
+- Snapshot of kde3-revival/kde3-qt commit 00644b6
+
 * Sat Nov 21 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.3.8b+git20261121-1
 - Snapshot of kde3-revival/kde3-qt commit 3d84a37
 
