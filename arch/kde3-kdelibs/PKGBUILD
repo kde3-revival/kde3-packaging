@@ -17,15 +17,15 @@ pkgdesc='KDE 3.5 core libraries maintained for kde3-revival'
 arch=(x86_64)
 url='https://github.com/kde3-revival/kde3-kdelibs'
 license=('LGPL-2.0-or-later AND GPL-2.0-or-later AND BSD-2-Clause AND GFDL-1.2-or-later')
-# openssl is loaded at run time (KOpenSSLProxy); iceauth is run by
+# iceauth is run by
 # dcopserver; perl runs dcopidlng (kde3_use_dcopidlng() of other modules),
 # fileshareset and kconf_update scripts; libpng and zlib are needed by the
 # CMake package (find_dependency()).
-depends=(kde3-qt acl avahi bzip2 cairo fontconfig glib2 glibc krb5 libavif
+depends=(kde3-qt acl avahi brotli bzip2 cairo fontconfig glib2 glibc krb5 libavif
          libcups libgcc libheif libice libidn libjpeg-turbo libjxl libpng libpsl
          libpulse librsvg libsm libsndfile libstdc++ libthai libtiff libutempter
-         libwebp libx11 libxext libxft libxml2 libxrender libxslt openssl pcre
-         perl xorg-iceauth zlib)
+         libwebp libx11 libxext libxft libxml2 libxrender libxslt lz4 openssl pcre
+         perl xorg-iceauth xz zlib zstd)
 makedepends=(cmake ninja)
 optdepends=('aspell: spell checking (KSpell)'
             'hspell: Hebrew spell checking (KSpell)'

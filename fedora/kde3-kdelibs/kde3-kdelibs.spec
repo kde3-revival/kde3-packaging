@@ -66,12 +66,14 @@ BuildRequires:  libxml2
 BuildRequires:  libxml2-devel
 BuildRequires:  libXrender-devel
 BuildRequires:  libxslt-devel
+BuildRequires:  brotli-devel
+BuildRequires:  libzstd-devel
+BuildRequires:  lz4-devel
 BuildRequires:  openssl-devel
+BuildRequires:  xz-devel
 BuildRequires:  pulseaudio-libs-devel
 BuildRequires:  zlib-devel
 
-# KOpenSSLProxy loads libssl/libcrypto at run time.
-Requires:       openssl-libs%{?_isa}
 # dcopserver runs iceauth.
 Requires:       iceauth
 Requires:       kde3-qt%{?_isa}
