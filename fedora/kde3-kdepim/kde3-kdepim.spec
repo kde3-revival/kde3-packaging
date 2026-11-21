@@ -32,6 +32,7 @@ BuildRequires:  perl(lib)
 BuildRequires:  perl(strict)
 BuildRequires:  perl(warnings)
 BuildRequires:  cyrus-sasl-devel
+BuildRequires:  glib2-devel
 BuildRequires:  gpgme-devel
 BuildRequires:  libgpg-error-devel
 BuildRequires:  zlib-devel
@@ -83,18 +84,21 @@ programs against them.
 # CMAKE_BUILD_TYPE=None: the distribution flags only.  cyrus-sasl is
 # required (the sieve ioslave, the authentication methods of imap4);
 # gnokii (mobile phones in KAddressBook) is not used, indexlib (KMail's
-# full-text index) is experimental and off by default.
+# full-text index) is experimental and off by default.  KDEPIM_WITH_LOGIND:
+# KMail listens to logind's PrepareForSleep (GIO; auto-detected by
+# default).
 %cmake \
     -DCMAKE_BUILD_TYPE=None \
     -DCMAKE_INSTALL_PREFIX=%{kde3dir} \
     -DKDEPIM_WITH_SASL=ON \
     -DKDEPIM_WITH_GNOKII=OFF \
-    -DKDEPIM_INDEXLIB=OFF
+    -DKDEPIM_INDEXLIB=OFF \
+    -DKDEPIM_WITH_LOGIND=ON
 # Fail instead of silently building without an optional feature.
 for have in HAVE_LIBSASL2 HAVE_INOTIFY HAVE_GPGME_0_4_BRANCH HAVE_GPGME_CANCEL \
             HAVE_GPGME_INCLUDE_CERTS_DEFAULT HAVE_GPGME_KEYLIST_MODE_VALIDATE \
             HAVE_GPGME_KEY_T_KEYLIST_MODE HAVE_GPGME_OP_GETAUDITLOG \
-            HAVE_GPGME_WRONG_KEY_USAGE KDEPIM_NEW_DISTRLISTS; do
+            HAVE_GPGME_WRONG_KEY_USAGE KDEPIM_NEW_DISTRLISTS HAVE_GIO_UNIX; do
     grep -q "^#define $have 1" %{__cmake_builddir}/config.h || { echo "configure: $have not set" >&2; exit 1; }
 done
 %cmake_build

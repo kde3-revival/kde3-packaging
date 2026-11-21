@@ -23,7 +23,8 @@ license=('GPL-2.0-or-later AND LGPL-2.0-or-later AND (LGPL-2.1-only OR MPL-1.0) 
 # backends of KMail and Kleopatra, through gpgme and, for the classic
 # OpenPGP support of KMail (libkpgp), directly.  perl runs ical2vcal and
 # kconf_update scripts (and generates libical's sources at build time).
-depends=(kde3-kdebase kde3-kdelibs kde3-qt glibc gnupg gpgme libgcc
+# glib2: KMail disconnects before the machine sleeps (logind, GIO).
+depends=(kde3-kdebase kde3-kdelibs kde3-qt glib2 glibc gnupg gpgme libgcc
          libgpg-error libsasl libstdc++ libx11 perl zlib)
 makedepends=(cmake ninja)
 optdepends=('spamassassin: spam filtering (KMail anti-spam wizard)'
@@ -39,12 +40,14 @@ build() {
   # flags only.  cyrus-sasl is required (the sieve ioslave, the
   # authentication methods of imap4); gnokii (mobile phones in
   # KAddressBook) is not in Arch, indexlib (KMail's full-text index) is
-  # experimental and off by default.
+  # experimental and off by default.  KDEPIM_WITH_LOGIND: KMail listens
+  # to logind's PrepareForSleep (GIO; auto-detected by default).
   cmake -S kde3-kdepim-${_commit} -B build -G Ninja \
     -DCMAKE_BUILD_TYPE=None \
     -DKDEPIM_WITH_SASL=ON \
     -DKDEPIM_WITH_GNOKII=OFF \
-    -DKDEPIM_INDEXLIB=OFF
+    -DKDEPIM_INDEXLIB=OFF \
+    -DKDEPIM_WITH_LOGIND=ON
   grep -qx "CMAKE_INSTALL_PREFIX:PATH=${_prefix}" build/CMakeCache.txt ||
     { error "configure: install prefix is not ${_prefix}"; return 1; }
   # Fail instead of silently building without an optional feature.
@@ -52,7 +55,7 @@ build() {
   for have in HAVE_LIBSASL2 HAVE_INOTIFY HAVE_GPGME_0_4_BRANCH HAVE_GPGME_CANCEL \
               HAVE_GPGME_INCLUDE_CERTS_DEFAULT HAVE_GPGME_KEYLIST_MODE_VALIDATE \
               HAVE_GPGME_KEY_T_KEYLIST_MODE HAVE_GPGME_OP_GETAUDITLOG \
-              HAVE_GPGME_WRONG_KEY_USAGE KDEPIM_NEW_DISTRLISTS; do
+              HAVE_GPGME_WRONG_KEY_USAGE KDEPIM_NEW_DISTRLISTS HAVE_GIO_UNIX; do
     grep -q "^#define $have 1" build/config.h || { error "configure: $have not set"; return 1; }
   done
   cmake --build build
