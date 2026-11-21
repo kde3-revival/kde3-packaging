@@ -59,7 +59,15 @@ nm -D --defined-only $KDEDIR/lib/kde3/volume_panelapplet.so | grep -q ' T init$'
     fail "volume applet does not export init()"
 echo ok
 
-step "Konsole's console fonts in fontconfig"
+step "network applet"
+for f in $KDEDIR/lib/kde3/network_panelapplet.so $KDEDIR/share/apps/kicker/applets/networkapplet.desktop; do
+    [[ -f $f ]] || fail "$f missing"
+done
+ldd $KDEDIR/lib/kde3/network_panelapplet.so | grep -q 'libnm\.so' || fail "network applet not linked to libnm"
+nm -D --defined-only $KDEDIR/lib/kde3/network_panelapplet.so | grep -q ' T init$' ||
+    fail "network applet does not export init()"
+echo ok
+
 link=/etc/fonts/conf.d/60-kde3-konsole-fonts.conf
 [[ -L $link ]] || fail "$link is not a symbolic link"
 [[ $(realpath "$link") == $KDEDIR/share/fontconfig/conf.avail/60-kde3-konsole-fonts.conf ]] ||

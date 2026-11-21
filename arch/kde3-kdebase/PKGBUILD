@@ -23,9 +23,10 @@ license=('GPL-2.0-or-later AND LGPL-2.0-or-later AND GFDL-1.2-or-later')
 # fonts).  glib2: ksmserver asks systemd-logind for sleep and hibernate
 # (GIO); libpulse: the volume applet of kicker.  udisks2: the media
 # manager lists, mounts and ejects the storage devices through it (GIO);
-# upower: libupower-glib, for the power applet of kicker.
+# upower: libupower-glib, for the power applet of kicker.  libnm: the
+# network applet of kicker (NetworkManager).
 depends=(kde3-kdelibs kde3-qt avahi fontconfig freetype2 glib2
-         glibc glu libgcc libgl libice libldap libpulse libsasl libsm libstdc++
+         glibc glu libgcc libgl libice libldap libnm libpulse libsasl libsm libstdc++
          libusb-compat libx11 libxau libxcomposite libxcursor
          libxdamage libxdmcp libxext libxfixes libxft libxinerama libxkbfile
          libxrandr libxrender libxss libxtst lm_sensors openexr openssl pam
@@ -34,6 +35,8 @@ depends=(kde3-kdelibs kde3-qt avahi fontconfig freetype2 glib2
 makedepends=(cmake ninja xorg-bdftopcf xorg-mkfontscale)
 optdepends=('gdb: backtraces in the crash handler (DrKonqi)'
             'xorg-mkfontscale: fonts.dir for core X fonts installed with kfontinst'
+            'networkmanager: the network applet of kicker'
+            'nm-connection-editor: settings of the network applet (802.1X, WEP)'
             'xorg-server: to run kdm')
 backup=(etc/pam.d/kde3
         etc/pam.d/kde3-np
@@ -103,6 +106,7 @@ package() {
            lib/kde3/kio_smb.so lib/kde3/kio_ldap.so lib/kde3/exrthumbnail.so \
            lib/kde3/volume_panelapplet.so share/apps/kicker/applets/volumeapplet.desktop \
            lib/kde3/kpowermanager_panelapplet.so share/apps/kicker/applets/kpowermanager.desktop \
+           lib/kde3/network_panelapplet.so share/apps/kicker/applets/networkapplet.desktop \
            share/apps/konsole/fonts/fonts.dir \
            share/fontconfig/conf.avail/60-kde3-konsole-fonts.conf; do
     [[ -e ${root}/$f ]] || { error "not built: $f"; return 1; }

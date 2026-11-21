@@ -60,6 +60,7 @@ BuildRequires:  libXtst-devel
 BuildRequires:  lm_sensors-devel
 BuildRequires:  mesa-libGL-devel
 BuildRequires:  mesa-libGLU-devel
+BuildRequires:  NetworkManager-libnm-devel
 BuildRequires:  openexr-devel
 BuildRequires:  openldap-devel
 BuildRequires:  openssl-devel
@@ -72,6 +73,10 @@ Requires:       kde3-kdelibs%{?_isa}
 # UDisks2; the power applet of kicker asks UPower.
 Requires:       udisks2
 Requires:       upower
+# The network applet of kicker talks to NetworkManager (libnm) and opens
+# its settings editor for what it does not set up itself (802.1X, WEP).
+Recommends:     NetworkManager
+Recommends:     nm-connection-editor
 # Run by startkde (xrdb) and kcontrol (xrdb, setxkbmap).  mkfontdir only
 # makes fonts.dir files for core X fonts installed with kfontinst.
 Recommends:     mkfontscale
@@ -165,6 +170,7 @@ for f in bin/kdm bin/kxkb bin/kompmgr bin/kfontinst bin/ksysguardd \
          lib/kde3/kio_smb.so lib/kde3/kio_ldap.so lib/kde3/exrthumbnail.so \
          lib/kde3/volume_panelapplet.so share/apps/kicker/applets/volumeapplet.desktop \
          lib/kde3/kpowermanager_panelapplet.so share/apps/kicker/applets/kpowermanager.desktop \
+         lib/kde3/network_panelapplet.so share/apps/kicker/applets/networkapplet.desktop \
          share/apps/konsole/fonts/fonts.dir \
          share/fontconfig/conf.avail/60-kde3-konsole-fonts.conf; do
     [ -e $root/$f ] || { echo "not built: $f" >&2; exit 1; }
