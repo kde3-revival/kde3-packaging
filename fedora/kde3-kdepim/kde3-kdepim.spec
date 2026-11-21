@@ -6,9 +6,9 @@
 # kde3-qt, kde3-kdelibs and kde3-kdebase are not in a repository: build
 # them first (../../build.sh does that with the packages in out/).
 
-%global commit     b12fbb9fa44f83422320bde0ec9597305829719a
+%global commit     069a2347e305b14e59d53e01818c1d9c30be0c5b
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global date       20261120
+%global date       20261121
 
 %global kde3dir    /opt/kde3
 
@@ -154,6 +154,9 @@ sort -o devel.list devel.list
 %files devel -f devel.list
 
 %changelog
+* Sat Nov 21 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261121-1
+- Snapshot of kde3-revival/kde3-kdepim commit 069a234
+
 * Sat Nov 21 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261120-1
 - Snapshot of kde3-revival/kde3-kdepim commit b12fbb9
 
