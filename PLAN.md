@@ -156,6 +156,22 @@ luată de proprietar, nu doar propunere, cu excepția celor marcate „propunere
 3. Prima sesiune reală pe mașina fizică (vezi 6): GDM 51 pe Arch încă pornește
    sesiuni X11 (`gdm-x-session`) dacă `xorg-server` e instalat; altfel LightDM
    sau `startx /opt/kde3/bin/startkde` din TTY.
+   **Făcute în noaptea 21.11 (de instalat și testat pe sesiunea reală):**
+   - Indexurile KMail (pct. 4): kdepim 0110a10…788be9c, cu două review-uri
+     adversariale; scanarea read-only a celor 107 indexuri reale: niciunul
+     respins. SQLite nu mai pare necesar. Teste: build/kmailidx-tests/.
+   - IMAP după standby: kdelibs 49ad130 (keepalive + TCP_USER_TIMEOUT pe
+     slave-uri), kdepim 2b7cde1…069a234 (kio_imap4 renunță la conexiuni
+     moarte, BYE, o singură eroare; KMail deconectează la PrepareForSleep și
+     verifică la 10 s după trezire). Teste: build/kioimap-tests/.
+     Rămase minore: put() trimite încă două erori la ruperea înainte de „+”;
+     BYE fără închidere așteaptă ResponseTimeout; anularea la somn poate
+     redeschide conexiunea la IMAP online; alte dialoguri modale (parolă,
+     Reset & Sync) încă rulează somnul/trezirea în bucla lor.
+   - ksmserver ICEauthority (pct. 6): kdebase 58afadc.
+   - startkde fără mkfontdir/xset fp (pct. 7, parțial): kdebase 3f21213.
+   - Wayland etapele 0/1: docs/wayland-stage0-1.md; Qt 3d84a37 (TARGETS pe
+     XdndSelection).
 4. KMail: indexurile maildir corupte după cădere de tensiune/crash (analiză
    2026-11-21, kdepim, nereprodus încă). Întâi reparăm sistemul actual; doar
    dacă tot avem probleme trecem la SQLite (vezi 7.4). Câte un commit:
