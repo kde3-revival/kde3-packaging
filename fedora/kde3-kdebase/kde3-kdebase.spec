@@ -24,6 +24,8 @@ Source1:        kde3.pam
 Source2:        kde3-np.pam
 Source3:        kde3.desktop
 Source4:        kde3-kdm.service
+# Builds with the OpenEXR 3.2 of Fedora 44 (harmless with newer ones).
+Patch0:         kde3-kdebase-exr-header.patch
 
 BuildRequires:  cmake
 BuildRequires:  ninja-build
@@ -122,7 +124,7 @@ manager.  It uses the PAM services kde3 and kde3-np.
 
 
 %prep
-%autosetup -n %{name}-%{commit}
+%autosetup -p1 -n %{name}-%{commit}
 
 %build
 # The prefix, the library directory (/opt/kde3/lib) and the RUNPATH come
