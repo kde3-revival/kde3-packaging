@@ -27,7 +27,9 @@
 # backend draws images with bilinear filtering and no mipmaps, so images
 # a page shows at less than half their size alias (photos, screenshots in
 # thumbnails); sample raster images that are scaled down from mipmaps
-# (trilinear), as the Cairo port's CAIRO_FILTER_GOOD did.
+# (trilinear), as the Cairo port's CAIRO_FILTER_GOOD did.  Also for CSS
+# backgrounds, border-image and sprites (strict source rect draws), which
+# draw from a mipmapped copy of their part of the image (no bleeding).
 
 %bcond_with debuginfo
 
@@ -61,7 +63,7 @@
 
 Name:           wpewebkit
 Version:        2.54.3
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        WPE WebKit web content engine library
 
 # The license tag and the comment in webkitgtk.spec (same source tree)
@@ -250,6 +252,10 @@ export NINJA_STATUS="[%f/%t %es] "
 %{_libdir}/pkgconfig/wpe-platform-wayland-%{apiver}.pc
 
 %changelog
+* Sat Nov 21 2026 Serghei Amelian <serghei.amelian@gmail.com> - 2.54.3-3
+- Skia mipmap patch v2: also CSS backgrounds (background-size, repeated
+  tiles), border-image and sprites, without bleeding between sprites
+
 * Sat Nov 21 2026 Serghei Amelian <serghei.amelian@gmail.com> - 2.54.3-2
 - Skia: sample scaled-down images from mipmaps (kde3-wpepart's patch):
   images shown at less than half their size no longer alias
