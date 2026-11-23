@@ -210,4 +210,4 @@ there when the container has no user namespaces for bubblewrap.
 |--------------------|---------------------|----------|
 | (wpewebkit, repo)  | wpewebkit           | libWPEWebKit-2.0, WPE{Web,Network,GPU}Process, injected bundle, inspector resources |
 |                    | wpewebkit-devel     | headers, .so link, pkg-config files wpe-webkit-2.0, wpe-platform(-drm/-headless/-wayland)-2.0, wpe-web-process-extension-2.0 |
-| kde3-wpepart       | kde3-wpepart        | libkwpepart (KPart, preferred over KHTML for text/html), its service and XML GUI file, kwpeview |
+| kde3-wpepart       | kde3-wpepart        | libkwpepart (KPart, preferred over KHTML for text/html; mail mode for KMail), its service and XML GUI file, kwpeview, kwpe-filterconv |

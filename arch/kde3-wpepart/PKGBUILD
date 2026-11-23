@@ -19,8 +19,9 @@ pkgdesc='WPE WebKit browser part for Konqueror, maintained for kde3-revival'
 arch=(x86_64)
 url='https://github.com/kde3-revival/kde3-wpepart'
 license=('LGPL-2.1-or-later')
-depends=(kde3-kdelibs kde3-qt wpewebkit glib2 glibc libdrm libgcc libstdc++
-         libx11 libxcb libxext libxfixes libxpresent libxrandr)
+# gumbo-parser: the HTML sanitizer of the mail mode (KMail's reader).
+depends=(kde3-kdelibs kde3-qt wpewebkit glib2 glibc gumbo-parser libdrm libgcc
+         libstdc++ libx11 libxcb libxext libxfixes libxpresent libxrandr)
 makedepends=(cmake ninja)
 optdepends=('kde3-kdebase: Konqueror, the browser the part is made for')
 source=("kde3-wpepart-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz")
@@ -44,7 +45,7 @@ package() {
 
   local root=${pkgdir}${_prefix} f
   for f in lib/kde3/libkwpepart.so share/services/kwpepart.desktop \
-           share/apps/kwpepart/kwpepart.rc bin/kwpeview; do
+           share/apps/kwpepart/kwpepart.rc bin/kwpeview bin/kwpe-filterconv; do
     [[ -e ${root}/$f ]] || { error "not built: $f"; return 1; }
   done
 }

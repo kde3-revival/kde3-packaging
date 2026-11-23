@@ -42,6 +42,9 @@ BuildRequires:  pkgconfig(xrandr)
 BuildRequires:  pkgconfig(xcb)
 BuildRequires:  pkgconfig(xcb-dri3)
 BuildRequires:  pkgconfig(libdrm)
+# the HTML sanitizer of the mail mode (KMail's reader) parses with Gumbo
+# (kde3-wpepart c6f0c15 and later)
+BuildRequires:  pkgconfig(gumbo) >= 0.10
 
 Requires:       kde3-kdelibs%{?_isa}
 Requires:       wpewebkit%{?_isa} >= 2.54
@@ -71,13 +74,13 @@ of its own.  Installed in %{kde3dir}.
 %cmake_build
 
 %install
-# RUNPATHs into /opt/kde3/lib and /opt/kde3-qt/lib (see kde3-kdeutils.spec)
+# RUNPATHs into /opt/kde3/lib and /opt/kde3-qt/lib (see kde3-kdelibs.spec)
 export QA_RPATHS=$((0x0002))
 %cmake_install
 
 root=%{buildroot}%{kde3dir}
 for f in lib/kde3/libkwpepart.so share/services/kwpepart.desktop \
-         share/apps/kwpepart/kwpepart.rc bin/kwpeview; do
+         share/apps/kwpepart/kwpepart.rc bin/kwpeview bin/kwpe-filterconv; do
     [ -e $root/$f ] || { echo "not built: $f" >&2; exit 1; }
 done
 
@@ -99,6 +102,8 @@ done
 %changelog
 * Mon Nov 23 2026 Serghei Amelian <serghei.amelian@gmail.com> - 0.1.0+git20261123-1
 - Snapshot of kde3-revival/kde3-wpepart commit cb71e12
+- BuildRequires gumbo-parser (the mail mode's HTML sanitizer); kwpe-filterconv
+  (content filter lists) checked; tests/render-only is not built
 
 * Sat Nov 21 2026 Serghei Amelian <serghei.amelian@gmail.com> - 0.1.0+git20261121-1
 - Snapshot of kde3-revival/kde3-wpepart commit 4eafdb5
