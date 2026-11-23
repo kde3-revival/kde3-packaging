@@ -161,7 +161,10 @@ built with cyrus-sasl (required: sieve, imap4 authentication), without
 gnokii (mobile phones in KAddressBook; its service file is removed, as
 the filter is not built), without the experimental full-text index
 of KMail (indexlib) and with logind support (GIO: KMail disconnects
-before the machine sleeps).
+before the machine sleeps).  KMail's reader shows messages with
+kde3-wpepart's part in its mail mode (WebKit is the default engine) and
+falls back to KHTML without it: kde3-wpepart is an optional dependency
+(Fedora: Recommends).
 
 kde3-apps is the source tree of the applications of kdeutils and
 kdegraphics (kde3-revival/kde3-apps, which replaces the kde3-kdeutils and
@@ -197,6 +200,16 @@ the configure default), which the GIO/GDBus code of kdebase (sleep and
 hibernate in the logout dialog, through systemd-logind) and kdepim
 needs.  kdebase's volume applet of kicker uses libpulse (PulseAudio, or
 PipeWire's PulseAudio server).
+
+KWin composites the screen itself (kompmgr is gone): with the GLES 3
+backend (EGL on GBM, the buffers shared with the X server through DRI3;
+the recipes check that it is built) or, where that does not work,
+XRender.  kdebase's Settings portal backend xdg-desktop-portal-kde3
+gives KDE's fonts and colours to libadwaita and GTK 4: its kde3.portal
+and D-Bus service file are copied to /usr/share, as is kdebase's
+kde3-portals.conf (Settings: kde3, then gtk).  kdelibs' kwalletd keeps
+the wallets in the Secret Service (libsecret; the GNOME keyring) when one
+is running.
 
 ## wpewebkit, kde3-wpepart (Fedora)
 
