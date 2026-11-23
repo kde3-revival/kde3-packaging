@@ -66,7 +66,9 @@ step "kweather and kbluetooth"
 nm -D --defined-only /opt/kde3/lib/kde3/weather_panelapplet.so | grep -q ' T init$' ||
     fail "weather_panelapplet does not export init()"
 for p in kweatherservice kbluetooth; do
-    $p --help >$p-help.log 2>&1 || { cat $p-help.log; fail "$p --help"; }
+    # KCmdLineArgs exits with 254 after --help
+    out=$(timeout 20 $p --help 2>&1 </dev/null) || true
+    grep -qi '^usage:' <<<"$out" || { echo "$out"; fail "$p --help"; }
 done
 grep -q 'libgio-2\.0\.so' <<<"$(ldd /opt/kde3/bin/kbluetooth)" || fail "kbluetooth not linked to GIO"
 echo ok
