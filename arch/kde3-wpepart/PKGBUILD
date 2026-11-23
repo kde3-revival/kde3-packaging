@@ -11,8 +11,8 @@
 # (../../build.sh does that with the packages in out/).
 
 pkgname=kde3-wpepart
-_commit=4eafdb560f324a865d82c97bb7018f22e3a7c8e0
-_date=20261121
+_commit=cb71e1281efd2ad5fd56ecf28f4e58ecb7b994ba
+_date=20261123
 pkgver=0.1.0+git${_date}
 pkgrel=1
 pkgdesc='WPE WebKit browser part for Konqueror, maintained for kde3-revival'
@@ -24,7 +24,7 @@ depends=(kde3-kdelibs kde3-qt wpewebkit glib2 glibc libdrm libgcc libstdc++
 makedepends=(cmake ninja)
 optdepends=('kde3-kdebase: Konqueror, the browser the part is made for')
 source=("kde3-wpepart-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz")
-sha256sums=('c6bee20e26f90be6342de5527f12eced1d00fe0fb1671a8e90fa3c511c982b35')
+sha256sums=('e7040ca081ff0fa94b53512cfea438bab24acef8f88c9fb71b9d7f110410dd57')
 
 _prefix=/opt/kde3
 

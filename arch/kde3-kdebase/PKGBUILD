@@ -9,10 +9,10 @@
 # (../../build.sh does that with the packages in out/).
 
 pkgname=kde3-kdebase
-_commit=16a5a87d960844b5f9d604f149a0cda22c74fd4b
-_date=20261121
+_commit=5c2b1eabaa9b5349327accd5b5239f32c8f80c0d
+_date=20261123
 pkgver=3.5.10+git${_date}
-pkgrel=2
+pkgrel=1
 pkgdesc='KDE 3.5 desktop (kwin, kicker, kdesktop, konqueror, konsole, kcontrol, kdm, ...) maintained for kde3-revival'
 arch=(x86_64)
 url='https://github.com/kde3-revival/kde3-kdebase'
@@ -24,12 +24,16 @@ license=('GPL-2.0-or-later AND LGPL-2.0-or-later AND GFDL-1.2-or-later')
 # (GIO); libpulse: the volume applet of kicker.  udisks2: the media
 # manager lists, mounts and ejects the storage devices through it (GIO);
 # upower: libupower-glib, for the power applet of kicker.  libnm: the
-# network applet of kicker (NetworkManager).
+# network applet of kicker (NetworkManager).  KWin composites itself:
+# libglvnd (EGL, GLESv2), mesa (GBM), libdrm, libxcb (DRI3), libxshmfence
+# for the GLES 3 backend, libxpresent for tear-free frames, libxi
+# (XInput 2.3) for the overview's Super key and hot corner barrier.
 depends=(kde3-kdelibs kde3-qt avahi fontconfig freetype2 glib2
-         glibc glu libgcc libgl libice libldap libnm libpulse libsasl libsm libstdc++
-         libusb-compat libx11 libxau libxcomposite libxcursor
-         libxdamage libxdmcp libxext libxfixes libxft libxinerama libxkbfile
-         libxrandr libxrender libxss libxtst lm_sensors openexr openssl pam
+         glibc glu libdrm libgcc libgl libglvnd libice libldap libnm libpulse
+         libsasl libsm libstdc++ libusb-compat libx11 libxau libxcb
+         libxcomposite libxcursor libxdamage libxdmcp libxext libxfixes libxft
+         libxi libxinerama libxkbfile libxpresent libxrandr libxrender
+         libxshmfence libxss libxtst lm_sensors mesa openexr openssl pam
          perl smbclient udisks2 upower zlib
          xorg-setxkbmap xorg-xauth xorg-xmessage xorg-xrdb)
 makedepends=(cmake ninja xorg-bdftopcf xorg-mkfontscale)
@@ -39,6 +43,7 @@ optdepends=('gdb: backtraces in the crash handler (DrKonqi)'
             'nm-connection-editor: settings of the network applet (802.1X, WEP)'
             'xdg-desktop-portal-gtk: file chooser, settings and other portals (kde3-portals.conf)'
             'gnome-keyring: passwords of Chromium and Electron applications (libsecret), secret portal'
+            "dconf: the session's own GSettings database (KDE's fonts and colours for GTK)"
             'xorg-server: to run kdm')
 backup=(etc/pam.d/kde3
         etc/pam.d/kde3-np
@@ -54,14 +59,12 @@ source=("kde3-kdebase-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz"
         kde3.pam
         kde3-np.pam
         kde3.desktop
-        kde3-kdm.service
-        kde3-portals.conf)
-sha256sums=('92f512ca0c7397847ce2b478995fa909041b6a2f729e814ea4feef110ff02f3f'
+        kde3-kdm.service)
+sha256sums=('57a345f4e84e05b735da756370cf62a9370e281a913303174238de550aa2dca7'
             '6553fec18adaadec5e3e8a9c5f1c1640a0a029caa0b3d19a7c9448214848d4ce'
             '971b0fa0177567ccd0864b0832f4f06b7f9d6813db8aa9054c8a5821f108f5cf'
             'f0150f739ff3d1550decc7279bb4da8fab94b2d609aadecaf87422e64301086f'
-            '3b7c70b3e48cfa9077ee6740458bf479b4f7a77e61caf23545babbb4256a3c54'
-            'e2e91eaecd8f7018f6066ed36e9fdeb53a127410623288d9ad118d4d8f4ac9c6')
+            '3b7c70b3e48cfa9077ee6740458bf479b4f7a77e61caf23545babbb4256a3c54')
 
 _prefix=/opt/kde3
 
@@ -84,7 +87,10 @@ build() {
     -DKDEBASE_VOLUME_APPLET=ON \
     -DKDEBASE_LOGIND_SLEEP=ON \
     -DKDEBASE_UDISKS2=ON \
-    -DKDEBASE_POWER_APPLET=ON
+    -DKDEBASE_POWER_APPLET=ON \
+    -DKDEBASE_NETWORK_APPLET=ON \
+    -DKDEBASE_SYSTRAY_SNI=ON \
+    -DKDEBASE_SETTINGS_PORTAL=ON
   grep -qx "CMAKE_INSTALL_PREFIX:PATH=${_prefix}" build/CMakeCache.txt ||
     { error "configure: install prefix is not ${_prefix}"; return 1; }
   # Fail instead of silently building without an optional feature.
@@ -92,7 +98,9 @@ build() {
   for have in HAVE_PAM HAVE_SSL HAVE_XCOMPOSITE HAVE_XINERAMA HAVE_DPMS \
               HAVE_LIBSASL2 HAVE_XSCREENSAVER HAVE_DNSSD HAVE_SENSORS_SENSORS_H \
               HAVE_LIBUSB HAVE_XKB HAVE_XFT HAVE_XRENDER HAVE_XCURSOR HAVE_XTEST \
-              HAVE_XFIXES HAVE_LOGIND_SLEEP COMPILE_UDISKS2BACKEND; do
+              HAVE_XFIXES HAVE_LOGIND_SLEEP COMPILE_UDISKS2BACKEND \
+              HAVE_XDAMAGE HAVE_XPRESENT KWIN_PANORAMIX_CHECK KWIN_OVERVIEW_XI2 \
+              KWIN_HAVE_GLES HAVE_STATUSNOTIFIER; do
     grep -q "^#define $have 1" build/config.h || { error "configure: $have not set"; return 1; }
   done
   grep -q '^#define KDM_PAM_SERVICE "kde3"' build/config.h || { error "configure: PAM service"; return 1; }
@@ -106,11 +114,13 @@ package() {
 
   # Parts that are only built when their dependencies are found.
   local f
-  for f in bin/kdm bin/kxkb bin/kompmgr bin/kfontinst bin/ksysguardd \
+  for f in bin/kdm bin/kxkb bin/kfontinst bin/ksysguardd \
            lib/kde3/kio_smb.so lib/kde3/kio_ldap.so lib/kde3/exrthumbnail.so \
            lib/kde3/volume_panelapplet.so share/apps/kicker/applets/volumeapplet.desktop \
            lib/kde3/kpowermanager_panelapplet.so share/apps/kicker/applets/kpowermanager.desktop \
            lib/kde3/network_panelapplet.so share/apps/kicker/applets/networkapplet.desktop \
+           bin/xdg-desktop-portal-kde3 share/xdg-desktop-portal/portals/kde3.portal \
+           share/dbus-1/services/org.freedesktop.impl.portal.desktop.kde3.service \
            share/apps/konsole/fonts/fonts.dir \
            share/fontconfig/conf.avail/60-kde3-konsole-fonts.conf; do
     [[ -e ${root}/$f ]] || { error "not built: $f"; return 1; }
@@ -134,11 +144,19 @@ package() {
   install -Dm644 "${srcdir}/kde3.desktop" "${pkgdir}/usr/share/xsessions/kde3.desktop"
   install -Dm644 "${srcdir}/kde3-kdm.service" "${pkgdir}/usr/lib/systemd/system/kde3-kdm.service"
 
-  # xdg-desktop-portal's backends for that desktop (gtk, gnome-keyring for
-  # secrets, none for what needs GNOME Shell) instead of the
-  # gnome-portals.conf of the fallback desktop; xdg-desktop-portal does not
-  # search /opt/kde3.  The same file as kdebase's own kde3-portals.conf.
-  install -Dm644 "${srcdir}/kde3-portals.conf" "${pkgdir}/usr/share/xdg-desktop-portal/kde3-portals.conf"
+  # xdg-desktop-portal's backends for that desktop (kde3 and gtk for the
+  # settings, gtk for the rest, gnome-keyring for secrets, none for what
+  # needs GNOME Shell) instead of the gnome-portals.conf of the fallback
+  # desktop, and KDE 3's own Settings backend xdg-desktop-portal-kde3 (its
+  # kde3.portal and the session bus' service file): xdg-desktop-portal and
+  # dbus-daemon do not search /opt/kde3.  Copies of what kdebase installs
+  # in /opt/kde3/share.
+  install -Dm644 "${root}/share/xdg-desktop-portal/kde3-portals.conf" \
+    "${pkgdir}/usr/share/xdg-desktop-portal/kde3-portals.conf"
+  install -Dm644 "${root}/share/xdg-desktop-portal/portals/kde3.portal" \
+    "${pkgdir}/usr/share/xdg-desktop-portal/portals/kde3.portal"
+  install -Dm644 "${root}/share/dbus-1/services/org.freedesktop.impl.portal.desktop.kde3.service" \
+    "${pkgdir}/usr/share/dbus-1/services/org.freedesktop.impl.portal.desktop.kde3.service"
 
   # Konsole's console fonts ("Linux", "Unicode") for fontconfig and so
   # Xft: fontconfig does not search the KDE data directory.

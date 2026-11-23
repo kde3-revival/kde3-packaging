@@ -12,9 +12,9 @@
 # repository, nor is wpewebkit in Fedora: build them first (../../build.sh
 # does that with the packages in out/).
 
-%global commit     4eafdb560f324a865d82c97bb7018f22e3a7c8e0
+%global commit     cb71e1281efd2ad5fd56ecf28f4e58ecb7b994ba
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global date       20261121
+%global date       20261123
 
 %global kde3dir    /opt/kde3
 
@@ -97,5 +97,8 @@ done
 %doc README.md
 
 %changelog
+* Mon Nov 23 2026 Serghei Amelian <serghei.amelian@gmail.com> - 0.1.0+git20261123-1
+- Snapshot of kde3-revival/kde3-wpepart commit cb71e12
+
 * Sat Nov 21 2026 Serghei Amelian <serghei.amelian@gmail.com> - 0.1.0+git20261121-1
 - Snapshot of kde3-revival/kde3-wpepart commit 4eafdb5

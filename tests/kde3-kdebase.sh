@@ -53,6 +53,15 @@ grep -qx 'org.freedesktop.impl.portal.Secret=gnome-keyring;' $portalconf ||
     fail "kde3-portals.conf does not use gnome-keyring for secrets"
 grep -qx 'org.freedesktop.impl.portal.Screenshot=none;' $portalconf ||
     fail "kde3-portals.conf does not switch off the GNOME Shell portals"
+# KDE 3's own Settings backend first, xdg-desktop-portal-kde3, started by
+# the session bus from the service file in /usr/share.
+grep -qx 'org.freedesktop.impl.portal.Settings=kde3;gtk;' $portalconf ||
+    fail "kde3-portals.conf does not take the settings from kde3 first"
+grep -q '^DBusName=org.freedesktop.impl.portal.desktop.kde3$' \
+    /usr/share/xdg-desktop-portal/portals/kde3.portal || fail "kde3.portal missing or wrong"
+portalexec=$(sed -n 's/^Exec=//p' /usr/share/dbus-1/services/org.freedesktop.impl.portal.desktop.kde3.service)
+[[ $portalexec == $KDEDIR/bin/xdg-desktop-portal-kde3 && -x $portalexec ]] ||
+    fail "D-Bus service of xdg-desktop-portal-kde3: Exec=$portalexec"
 # startkde sets up the root window and shows its errors with kstartupx
 # instead of xsetroot, xprop and xmessage.
 [[ -x $KDEDIR/bin/kstartupx ]] || fail "kstartupx missing"
@@ -60,6 +69,17 @@ kdmconf=$KDEDIR/share/config/kdm
 ls $kdmconf
 grep -E '^(SessionsDirs|ServerCmd|PidFile|Theme|UseTheme)=' $kdmconf/kdmrc || true
 ! grep -rIl -e /builder/ -e /rpmbuild/ -e /pkg/ $kdmconf || fail "build directory in the kdm configuration"
+echo ok
+
+step "KWin compositor"
+# kompmgr is gone: KWin composites itself, with the GLES 3 backend (EGL on
+# GBM, DRI3) or XRender.
+[[ ! -e $KDEDIR/bin/kompmgr ]] || fail "kompmgr is still installed"
+kwinlib=$KDEDIR/lib/libkdeinit_kwin.so
+[[ -f $kwinlib ]] || kwinlib=$KDEDIR/lib/kde3/kwin.so
+for l in libEGL libGLESv2 libgbm libdrm libxcb-dri3 libxshmfence libXpresent libXi libXrender; do
+    ldd $kwinlib | grep -q "$l\.so" || fail "kwin not linked to $l"
+done
 echo ok
 
 step "volume applet"

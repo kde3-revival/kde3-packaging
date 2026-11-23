@@ -6,15 +6,15 @@
 # kde3-qt and kde3-kdelibs are not in a repository: build them first
 # (../../build.sh does that with the packages in out/).
 
-%global commit     16a5a87d960844b5f9d604f149a0cda22c74fd4b
+%global commit     5c2b1eabaa9b5349327accd5b5239f32c8f80c0d
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global date       20261121
+%global date       20261123
 
 %global kde3dir    /opt/kde3
 
 Name:           kde3-kdebase
 Version:        3.5.10+git%{date}
-Release:        2%{?dist}
+Release:        1%{?dist}
 Summary:        KDE 3.5 desktop maintained for kde3-revival
 
 License:        GPL-2.0-or-later AND LGPL-2.0-or-later AND GFDL-1.2-or-later
@@ -24,9 +24,6 @@ Source1:        kde3.pam
 Source2:        kde3-np.pam
 Source3:        kde3.desktop
 Source4:        kde3-kdm.service
-Source5:        kde3-portals.conf
-# Builds with the OpenEXR 3.2 of Fedora 44 (harmless with newer ones).
-Patch0:         kde3-kdebase-exr-header.patch
 
 BuildRequires:  cmake
 BuildRequires:  ninja-build
@@ -70,6 +67,22 @@ BuildRequires:  openssl-devel
 BuildRequires:  pam-devel
 BuildRequires:  pulseaudio-libs-devel
 BuildRequires:  upower-devel
+# The KWin compositor (kdebase 53f9ecd and later; kompmgr is gone): the
+# GLES 3 backend draws with EGL on GBM and shares its buffers with the X
+# server as DMA-BUFs through DRI3 (KWIN_HAVE_GLES, else XRender only);
+# Xpresent for tear-free frames; XInput 2.3 and RandR 1.5 for the
+# overview's Super key and hot corner barrier (and the touchpad module).
+BuildRequires:  pkgconfig(egl)
+BuildRequires:  pkgconfig(glesv2)
+BuildRequires:  pkgconfig(gbm)
+BuildRequires:  pkgconfig(libdrm)
+BuildRequires:  pkgconfig(xcb)
+BuildRequires:  pkgconfig(xcb-dri3)
+BuildRequires:  pkgconfig(xcb-sync)
+BuildRequires:  pkgconfig(x11-xcb)
+BuildRequires:  pkgconfig(xshmfence)
+BuildRequires:  pkgconfig(xpresent)
+BuildRequires:  pkgconfig(xi)
 
 Requires:       kde3-kdelibs%{?_isa}
 # The media manager lists, mounts and ejects the storage devices through
@@ -86,6 +99,9 @@ Recommends:     nm-connection-editor
 # applications also keep their passwords in (libsecret).
 Recommends:     xdg-desktop-portal-gtk
 Recommends:     gnome-keyring
+# startkde gives the session a dconf (GSettings) database of its own, which
+# kded_xsettings fills with KDE's fonts and colours for GTK and libadwaita.
+Recommends:     dconf
 # Run by startkde (xrdb) and kcontrol (xrdb, setxkbmap).  mkfontdir only
 # makes fonts.dir files for core X fonts installed with kfontinst.
 Recommends:     mkfontscale
@@ -154,12 +170,17 @@ manager.  It uses the PAM services kde3 and kde3-np.
     -DKDEBASE_VOLUME_APPLET=ON \
     -DKDEBASE_LOGIND_SLEEP=ON \
     -DKDEBASE_UDISKS2=ON \
-    -DKDEBASE_POWER_APPLET=ON
+    -DKDEBASE_POWER_APPLET=ON \
+    -DKDEBASE_NETWORK_APPLET=ON \
+    -DKDEBASE_SYSTRAY_SNI=ON \
+    -DKDEBASE_SETTINGS_PORTAL=ON
 # Fail instead of silently building without an optional feature.
 for have in HAVE_PAM HAVE_SSL HAVE_XCOMPOSITE HAVE_XINERAMA HAVE_DPMS \
             HAVE_LIBSASL2 HAVE_XSCREENSAVER HAVE_DNSSD HAVE_SENSORS_SENSORS_H \
             HAVE_LIBUSB HAVE_XKB HAVE_XFT HAVE_XRENDER HAVE_XCURSOR HAVE_XTEST \
-            HAVE_XFIXES HAVE_LOGIND_SLEEP COMPILE_UDISKS2BACKEND; do
+            HAVE_XFIXES HAVE_LOGIND_SLEEP COMPILE_UDISKS2BACKEND \
+            HAVE_XDAMAGE HAVE_XPRESENT KWIN_PANORAMIX_CHECK KWIN_OVERVIEW_XI2 \
+            KWIN_HAVE_GLES HAVE_STATUSNOTIFIER; do
     grep -q "^#define $have 1" %{__cmake_builddir}/config.h || { echo "configure: $have not set" >&2; exit 1; }
 done
 grep -q '^#define KDM_PAM_SERVICE "kde3"' %{__cmake_builddir}/config.h || { echo "configure: PAM service" >&2; exit 1; }
@@ -175,11 +196,13 @@ export QA_RPATHS=$((0x0002))
 root=%{buildroot}%{kde3dir}
 
 # Parts that are only built when their dependencies are found.
-for f in bin/kdm bin/kxkb bin/kompmgr bin/kfontinst bin/ksysguardd \
+for f in bin/kdm bin/kxkb bin/kfontinst bin/ksysguardd \
          lib/kde3/kio_smb.so lib/kde3/kio_ldap.so lib/kde3/exrthumbnail.so \
          lib/kde3/volume_panelapplet.so share/apps/kicker/applets/volumeapplet.desktop \
          lib/kde3/kpowermanager_panelapplet.so share/apps/kicker/applets/kpowermanager.desktop \
          lib/kde3/network_panelapplet.so share/apps/kicker/applets/networkapplet.desktop \
+         bin/xdg-desktop-portal-kde3 share/xdg-desktop-portal/portals/kde3.portal \
+         share/dbus-1/services/org.freedesktop.impl.portal.desktop.kde3.service \
          share/apps/konsole/fonts/fonts.dir \
          share/fontconfig/conf.avail/60-kde3-konsole-fonts.conf; do
     [ -e $root/$f ] || { echo "not built: $f" >&2; exit 1; }
@@ -201,11 +224,19 @@ ln -s ../../..%{kde3dir}/share/fontconfig/conf.avail/60-kde3-konsole-fonts.conf 
 install -D -p -m644 %{SOURCE3} %{buildroot}%{_datadir}/xsessions/kde3.desktop
 install -D -p -m644 %{SOURCE4} %{buildroot}%{_unitdir}/kde3-kdm.service
 
-# xdg-desktop-portal's backends for that desktop (gtk, gnome-keyring for
-# secrets, none for what needs GNOME Shell) instead of the
-# gnome-portals.conf of the fallback desktop; xdg-desktop-portal does not
-# search /opt/kde3.  The same file as kdebase's own kde3-portals.conf.
-install -D -p -m644 %{SOURCE5} %{buildroot}%{_datadir}/xdg-desktop-portal/kde3-portals.conf
+# xdg-desktop-portal's backends for that desktop (kde3 and gtk for the
+# settings, gtk for the rest, gnome-keyring for secrets, none for what
+# needs GNOME Shell) instead of the gnome-portals.conf of the fallback
+# desktop, and KDE 3's own Settings backend xdg-desktop-portal-kde3 (its
+# kde3.portal and the session bus' service file): xdg-desktop-portal and
+# dbus-daemon do not search /opt/kde3.  Copies of what kdebase installs
+# in /opt/kde3/share.
+install -D -p -m644 $root/share/xdg-desktop-portal/kde3-portals.conf \
+    %{buildroot}%{_datadir}/xdg-desktop-portal/kde3-portals.conf
+install -D -p -m644 $root/share/xdg-desktop-portal/portals/kde3.portal \
+    %{buildroot}%{_datadir}/xdg-desktop-portal/portals/kde3.portal
+install -D -p -m644 $root/share/dbus-1/services/org.freedesktop.impl.portal.desktop.kde3.service \
+    %{buildroot}%{_datadir}/dbus-1/services/org.freedesktop.impl.portal.desktop.kde3.service
 
 # The file lists of the tree in /opt/kde3: kdm and its control center
 # module go into kde3-kdm, the headers and the unversioned links of the
@@ -265,7 +296,10 @@ sort -o devel.list devel.list
 %config(noreplace) %{_sysconfdir}/fonts/conf.d/60-kde3-konsole-fonts.conf
 %{_datadir}/xsessions/kde3.desktop
 %dir %{_datadir}/xdg-desktop-portal
+%dir %{_datadir}/xdg-desktop-portal/portals
 %{_datadir}/xdg-desktop-portal/kde3-portals.conf
+%{_datadir}/xdg-desktop-portal/portals/kde3.portal
+%{_datadir}/dbus-1/services/org.freedesktop.impl.portal.desktop.kde3.service
 
 %files devel -f devel.list
 
@@ -274,6 +308,16 @@ sort -o devel.list devel.list
 %{_unitdir}/kde3-kdm.service
 
 %changelog
+* Mon Nov 23 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261123-1
+- Snapshot of kde3-revival/kde3-kdebase commit 5c2b1ea
+- KWin composites itself: BuildRequires EGL, GLESv2, GBM, libdrm, xcb
+  (dri3, sync), x11-xcb, xshmfence, Xpresent and XInput 2; kompmgr is gone
+- xdg-desktop-portal-kde3 (Settings portal backend): kde3.portal and its
+  D-Bus service in /usr/share; kde3-portals.conf taken from kdebase
+- the network applet, the StatusNotifierItem tray icons and the settings
+  portal enabled and checked explicitly; Recommends dconf
+- drop the OpenEXR header patch (upstream e9c1b2b)
+
 * Sat Nov 21 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261121-2
 - Snapshot of kde3-revival/kde3-kdebase commit 16a5a87
 
