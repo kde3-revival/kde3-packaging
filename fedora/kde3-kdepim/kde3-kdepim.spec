@@ -6,7 +6,7 @@
 # kde3-qt, kde3-kdelibs and kde3-kdebase are not in a repository: build
 # them first (../../build.sh does that with the packages in out/).
 
-%global commit     b9b70a617675d3573c90f34776eb49e2a328e077
+%global commit     0bc073c17096bcc0ced77c96a2e7115c120ad2d8
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 %global date       20261123
 
@@ -14,7 +14,7 @@
 
 Name:           kde3-kdepim
 Version:        3.5.10+git%{date}
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        KDE 3.5 PIM suite (KMail, KOrganizer, Kontact) maintained for kde3-revival
 
 License:        GPL-2.0-or-later AND LGPL-2.0-or-later AND (LGPL-2.1-only OR MPL-1.0) AND GFDL-1.2-or-later
@@ -163,6 +163,9 @@ sort -o devel.list devel.list
 %files devel -f devel.list
 
 %changelog
+* Mon Nov 23 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261123-2
+- Snapshot of kde3-revival/kde3-kdepim commit 0bc073c
+
 * Mon Nov 23 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261123-1
 - Snapshot of kde3-revival/kde3-kdepim commit b9b70a6
 - Recommends kde3-wpepart (KMail's WebKit reader, KHTML fallback)

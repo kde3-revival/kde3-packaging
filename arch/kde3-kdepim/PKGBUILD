@@ -9,10 +9,10 @@
 # them first (../../build.sh does that with the packages in out/).
 
 pkgname=kde3-kdepim
-_commit=b9b70a617675d3573c90f34776eb49e2a328e077
+_commit=0bc073c17096bcc0ced77c96a2e7115c120ad2d8
 _date=20261123
 pkgver=3.5.10+git${_date}
-pkgrel=1
+pkgrel=2
 pkgdesc='KDE 3.5 PIM suite (KMail, KOrganizer, KAddressBook, Kontact, Kleopatra) maintained for kde3-revival'
 arch=(x86_64)
 url='https://github.com/kde3-revival/kde3-kdepim'
@@ -33,7 +33,7 @@ optdepends=('kde3-wpepart: KMail reader with WPE WebKit (else KHTML)'
             'spamassassin: spam filtering (KMail anti-spam wizard)'
             'clamav: virus filtering (KMail anti-virus wizard)')
 source=("kde3-kdepim-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz")
-sha256sums=('620ea86d941331ece5ef1324662326b740a96dff5366db6686e9f1a0e943268b')
+sha256sums=('da321f488a0fc772b2d2e228ea1601f219ebbd407b17facbbfb2084abb46ecdd')
 
 _prefix=/opt/kde3
 

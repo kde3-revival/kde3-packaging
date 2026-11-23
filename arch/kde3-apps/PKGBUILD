@@ -17,19 +17,21 @@
 
 pkgbase=kde3-apps
 pkgname=(kde3-apps kde3-ark kde3-kcalc kde3-kcharselect kde3-kdf kde3-khexedit
-         kde3-ktimer kde3-kwalletmanager kde3-kview kde3-kruler kde3-ksnapshot)
-_commit=210f071ba2a329762d39297ee8ba8f7ed1ad7be3
+         kde3-ktimer kde3-kwalletmanager kde3-kview kde3-kruler kde3-ksnapshot
+         kde3-kweather kde3-kbluetooth)
+_commit=75557fb855cddbfed4962ec7b4b9d796b7191316
 _date=20261123
 pkgver=3.5.10+git${_date}
-pkgrel=1
-pkgdesc='KDE 3.5 applications (Ark, KCalc, KView, KSnapshot, ...) maintained for kde3-revival'
+pkgrel=2
+pkgdesc='KDE 3.5 applications (Ark, KCalc, KView, KSnapshot, KWeather, ...) maintained for kde3-revival'
 arch=(x86_64)
 url='https://github.com/kde3-revival/kde3-apps'
 license=('GPL-2.0-or-later AND GPL-2.0-only AND LGPL-2.0-only AND LGPL-2.0-or-later AND GFDL-1.1-or-later')
-# tar and gzip: split packages need them at build time (namcap)
-makedepends=(cmake ninja kde3-kdelibs kde3-qt gmp gzip libx11 libxext tar)
+# tar and gzip: split packages need them at build time (namcap); glib2:
+# kbluetooth talks to BlueZ with GIO's GDBus.
+makedepends=(cmake ninja kde3-kdelibs kde3-qt glib2 gmp gzip libx11 libxext tar)
 source=("kde3-apps-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz")
-sha256sums=('2205685e14e6ef4fb77e47c92b2def467c2d521895ed8784cd80fc1dac6bbcd6')
+sha256sums=('2344bf001f9f85378e327b4ddaece7a73d6a1cecb910349e4fd52ee43dfa2519')
 
 _prefix=/opt/kde3
 # kde3-kdeutils and kde3-kdegraphics older than that are replaced
@@ -55,7 +57,9 @@ build() {
     -DKDE3_APPS_KVIEW=ON \
     -DKDE3_APPS_KRULER=ON \
     -DKDE3_APPS_KSNAPSHOT=ON \
-    -DKDE3_APPS_KSNAPSHOT_XSHAPE=ON
+    -DKDE3_APPS_KSNAPSHOT_XSHAPE=ON \
+    -DKDE3_APPS_KWEATHER=ON \
+    -DKDE3_APPS_KBLUETOOTH=ON
   grep -qx "CMAKE_INSTALL_PREFIX:PATH=${_prefix}" build/CMakeCache.txt ||
     { error "configure: install prefix is not ${_prefix}"; return 1; }
   local have
@@ -84,12 +88,13 @@ _install() {
 }
 
 package_kde3-apps() {
-  pkgdesc='KDE 3.5 applications of kde3-revival (all of them: Ark, KCalc, KCharSelect, KDiskFree, KHexEdit, KTimer, KWalletManager, KView, KRuler, KSnapshot)'
+  pkgdesc='KDE 3.5 applications of kde3-revival (all of them: Ark, KCalc, KCharSelect, KDiskFree, KHexEdit, KTimer, KWalletManager, KView, KRuler, KSnapshot, KWeather, kbluetooth)'
   depends=("kde3-ark=${pkgver}-${pkgrel}" "kde3-kcalc=${pkgver}-${pkgrel}"
            "kde3-kcharselect=${pkgver}-${pkgrel}" "kde3-kdf=${pkgver}-${pkgrel}"
            "kde3-khexedit=${pkgver}-${pkgrel}" "kde3-ktimer=${pkgver}-${pkgrel}"
            "kde3-kwalletmanager=${pkgver}-${pkgrel}" "kde3-kview=${pkgver}-${pkgrel}"
-           "kde3-kruler=${pkgver}-${pkgrel}" "kde3-ksnapshot=${pkgver}-${pkgrel}")
+           "kde3-kruler=${pkgver}-${pkgrel}" "kde3-ksnapshot=${pkgver}-${pkgrel}"
+           "kde3-kweather=${pkgver}-${pkgrel}" "kde3-kbluetooth=${pkgver}-${pkgrel}")
   replaces=("kde3-kdeutils<${_replaced}" "kde3-kdegraphics<${_replaced}")
   conflicts=("kde3-kdeutils<${_replaced}" "kde3-kdegraphics<${_replaced}")
   install -Dm644 -t "${pkgdir}/usr/share/doc/${pkgname}" kde3-apps-${_commit}/{README.md,AUTHORS}
@@ -202,4 +207,23 @@ package_kde3-ksnapshot() {
   conflicts=("kde3-kdegraphics<${_replaced}")
   local _files=(bin/ksnapshot)
   _install ksnapshot
+}
+
+package_kde3-kweather() {
+  pkgdesc='Weather applet of the KDE 3.5 panel, forecasts from Open-Meteo (kde3-revival)'
+  license=('GPL-2.0-or-later AND GFDL-1.1-or-later')
+  depends=("${_kdedeps[@]}")
+  # the applet runs in kicker
+  optdepends=('kde3-kdebase: the panel (kicker) the applet runs in')
+  local _files=(bin/kweatherservice lib/kde3/weather_panelapplet.so lib/kde3/kcm_weather.so)
+  _install kweather
+}
+
+package_kde3-kbluetooth() {
+  pkgdesc='Bluetooth applet of the KDE 3.5 system tray, on BlueZ 5 (kde3-revival)'
+  license=('GPL-2.0-or-later AND GFDL-1.1-or-later')
+  # bluez: bluetoothd, over the system D-Bus (GIO)
+  depends=("${_kdedeps[@]}" bluez glib2)
+  local _files=(bin/kbluetooth share/autostart/kbluetooth.desktop)
+  _install kbluetooth
 }

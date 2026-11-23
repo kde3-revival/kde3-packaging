@@ -9,7 +9,8 @@ set -euo pipefail
 . "$(dirname "$0")/common.sh"
 
 apps="kde3-ark kde3-kcalc kde3-kcharselect kde3-kdf kde3-khexedit kde3-ktimer
-      kde3-kwalletmanager kde3-kview kde3-kruler kde3-ksnapshot"
+      kde3-kwalletmanager kde3-kview kde3-kruler kde3-ksnapshot kde3-kweather
+      kde3-kbluetooth"
 
 step "one package per application, kde3-apps replaces kde3-kdeutils and kde3-kdegraphics"
 if command -v pacman >/dev/null; then
@@ -52,7 +53,22 @@ kde3-kview lib/kde3/libkviewviewer.so
 kde3-kruler bin/kruler
 kde3-ksnapshot bin/ksnapshot
 kde3-ksnapshot share/doc/HTML/en/ksnapshot/index.docbook
+kde3-kweather bin/kweatherservice
+kde3-kweather lib/kde3/weather_panelapplet.so
+kde3-kweather share/apps/kicker/applets/kweather.desktop
+kde3-kbluetooth bin/kbluetooth
+kde3-kbluetooth share/autostart/kbluetooth.desktop
 LIST
+echo ok
+
+step "kweather and kbluetooth"
+# the applet's entry point for kicker, the programs' command lines
+nm -D --defined-only /opt/kde3/lib/kde3/weather_panelapplet.so | grep -q ' T init$' ||
+    fail "weather_panelapplet does not export init()"
+for p in kweatherservice kbluetooth; do
+    $p --help >$p-help.log 2>&1 || { cat $p-help.log; fail "$p --help"; }
+done
+grep -q 'libgio-2\.0\.so' <<<"$(ldd /opt/kde3/bin/kbluetooth)" || fail "kbluetooth not linked to GIO"
 echo ok
 
 bash "$(dirname "$0")/kde3-apps-utils.sh"

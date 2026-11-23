@@ -144,6 +144,8 @@ bit of scripts).
 | kde3-kview         | kde3-kview          | KView (+ viewer part and plugins, libkimageviewer) |
 | kde3-kruler        | kde3-kruler         | KRuler |
 | kde3-ksnapshot     | kde3-ksnapshot      | KSnapshot |
+| kde3-kweather      | kde3-kweather       | KWeather: panel applet, kcm_weather, kweatherservice (Open-Meteo) |
+| kde3-kbluetooth    | kde3-kbluetooth     | kbluetooth: Bluetooth applet of the system tray (BlueZ 5, autostarted) |
 
 Each application's package has its handbook.
 
@@ -177,7 +179,9 @@ in exactly one package.  The package kde3-apps depends on all of them and
 replaces (Fedora: obsoletes) kde3-kdeutils and kde3-kdegraphics, so an
 upgrade installs every application they had; each application's package
 conflicts with the old package that held its files.  The applications
-need no more than kdelibs (and GMP for KCalc, libXext for KSnapshot).
+need no more than kdelibs (and GMP for KCalc, libXext for KSnapshot, GIO
+for kbluetooth, which needs BlueZ's bluetoothd at run time; KWeather's
+applet runs in kdebase's kicker, an optional dependency / Recommends).
 The image formats KView reads and KSnapshot writes are those of kde3-qt
 and of kdelibs' kimgio plugins.  KWin's screenshot shortcuts (Print,
 Shift+Print, Alt+Print) run KSnapshot (kde3-kdebase: an optional

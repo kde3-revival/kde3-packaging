@@ -13,7 +13,7 @@
 # upgrade installs every application they had; each application's
 # package conflicts with the old package that held its files.
 
-%global commit     210f071ba2a329762d39297ee8ba8f7ed1ad7be3
+%global commit     75557fb855cddbfed4962ec7b4b9d796b7191316
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 %global date       20261123
 
@@ -25,12 +25,12 @@
 # <application directory>:<package>; the handbook in doc/<directory> goes
 # with it (and doc/kinfocenter, the handbook of KDiskFree's module, with
 # kdf).
-%global apps ark:kde3-ark kcalc:kde3-kcalc kcharselect:kde3-kcharselect kdf:kde3-kdf khexedit:kde3-khexedit ktimer:kde3-ktimer kwallet:kde3-kwalletmanager kview:kde3-kview kruler:kde3-kruler ksnapshot:kde3-ksnapshot
+%global apps ark:kde3-ark kcalc:kde3-kcalc kcharselect:kde3-kcharselect kdf:kde3-kdf khexedit:kde3-khexedit ktimer:kde3-ktimer kwallet:kde3-kwalletmanager kview:kde3-kview kruler:kde3-kruler ksnapshot:kde3-ksnapshot kweather:kde3-kweather kbluetooth:kde3-kbluetooth
 
 Name:           kde3-apps
 Version:        3.5.10+git%{date}
-Release:        1%{?dist}
-Summary:        KDE 3.5 applications (Ark, KCalc, KView, KSnapshot, ...) for kde3-revival
+Release:        2%{?dist}
+Summary:        KDE 3.5 applications (Ark, KCalc, KView, KSnapshot, KWeather, ...) for kde3-revival
 
 License:        GPL-2.0-or-later AND GPL-2.0-only AND LGPL-2.0-only AND LGPL-2.0-or-later AND GFDL-1.1-or-later
 URL:            https://github.com/kde3-revival/kde3-apps
@@ -44,6 +44,8 @@ BuildRequires:  kde3-kdelibs-devel
 BuildRequires:  gmp-devel
 # The Shape extension: KSnapshot cuts shaped windows to their shape.
 BuildRequires:  libXext-devel
+# kbluetooth talks to BlueZ over the system D-Bus with GIO's GDBus.
+BuildRequires:  glib2-devel
 
 Requires:       kde3-ark%{?_isa} = %{version}-%{release}
 Requires:       kde3-kcalc%{?_isa} = %{version}-%{release}
@@ -55,6 +57,8 @@ Requires:       kde3-kwalletmanager%{?_isa} = %{version}-%{release}
 Requires:       kde3-kview%{?_isa} = %{version}-%{release}
 Requires:       kde3-kruler%{?_isa} = %{version}-%{release}
 Requires:       kde3-ksnapshot%{?_isa} = %{version}-%{release}
+Requires:       kde3-kweather%{?_isa} = %{version}-%{release}
+Requires:       kde3-kbluetooth%{?_isa} = %{version}-%{release}
 Obsoletes:      kde3-kdeutils < %{replaced}
 Provides:       kde3-kdeutils = %{version}-%{release}
 Obsoletes:      kde3-kdegraphics < %{replaced}
@@ -63,8 +67,9 @@ Provides:       kde3-kdegraphics = %{version}-%{release}
 %description
 The applications of the KDE 3.5 desktop maintained by the kde3-revival
 project that are not part of kdelibs, kdebase or kdepim, from kdeutils
-and kdegraphics 3.5.10: Ark, KCalc, KCharSelect, KDiskFree, KHexEdit,
-KTimer, KWalletManager, KView, KRuler and KSnapshot.  This package
+and kdegraphics 3.5.10 (Ark, KCalc, KCharSelect, KDiskFree, KHexEdit,
+KTimer, KWalletManager, KView, KRuler and KSnapshot), the weather applet
+KWeather of kdetoys and the new Bluetooth applet kbluetooth.  This package
 installs all of them; each is a package of its own.  They are installed
 in %{kde3dir} and do not conflict with the applications of KDE Gear.
 
@@ -200,6 +205,32 @@ capture of the full screen, a window or a region.  Installed in
 %{kde3dir}.
 
 
+%package -n kde3-kweather
+Summary:        Weather applet of the KDE 3.5 panel (kde3-revival)
+License:        GPL-2.0-or-later AND GFDL-1.1-or-later
+Requires:       kde3-kdelibs%{?_isa}
+# the applet runs in kicker
+Recommends:     kde3-kdebase%{?_isa}
+
+%description -n kde3-kweather
+KWeather of KDE 3.5 as maintained by the kde3-revival project: the
+weather applet of the panel, its settings module and the DCOP service
+KWeatherService, which gets the forecasts from Open-Meteo.  Installed in
+%{kde3dir}.
+
+%package -n kde3-kbluetooth
+Summary:        Bluetooth applet of the KDE 3.5 system tray (kde3-revival)
+License:        GPL-2.0-or-later AND GFDL-1.1-or-later
+Requires:       kde3-kdelibs%{?_isa}
+# BlueZ 5's bluetoothd, over the system D-Bus
+Requires:       bluez
+
+%description -n kde3-kbluetooth
+kbluetooth of the kde3-revival project: the Bluetooth applet of the
+system tray (BlueZ 5): switch the adapter, pair, connect and disconnect
+devices.  Started with the session.  Installed in %{kde3dir}.
+
+
 %prep
 %autosetup -n %{name}-%{commit}
 
@@ -223,7 +254,9 @@ capture of the full screen, a window or a region.  Installed in
     -DKDE3_APPS_KVIEW=ON \
     -DKDE3_APPS_KRULER=ON \
     -DKDE3_APPS_KSNAPSHOT=ON \
-    -DKDE3_APPS_KSNAPSHOT_XSHAPE=ON
+    -DKDE3_APPS_KSNAPSHOT_XSHAPE=ON \
+    -DKDE3_APPS_KWEATHER=ON \
+    -DKDE3_APPS_KBLUETOOTH=ON
 for have in HAVE_GMP HAVE_LONG_DOUBLE HAVE_L_FUNCS HAVE_X11_EXTENSIONS_SHAPE_H; do
     grep -q "^#define $have 1" %{__cmake_builddir}/config.h || { echo "configure: $have not set" >&2; exit 1; }
 done
@@ -241,7 +274,9 @@ root=%{buildroot}%{kde3dir}
 for f in bin/ark bin/kcalc bin/kcharselect bin/kdf bin/kwikdisk bin/khexedit \
          bin/ktimer bin/kwalletmanager bin/kview bin/ksnapshot bin/kruler \
          lib/kde3/libarkpart.so lib/kde3/libkhexedit2part.so lib/kde3/kcm_kdf.so \
-         lib/kde3/kcm_kwallet.so lib/kde3/libkviewviewer.so lib/kde3/libkviewcanvas.so; do
+         lib/kde3/kcm_kwallet.so lib/kde3/libkviewviewer.so lib/kde3/libkviewcanvas.so \
+         bin/kweatherservice lib/kde3/weather_panelapplet.so lib/kde3/kcm_weather.so \
+         bin/kbluetooth share/autostart/kbluetooth.desktop; do
     [ -e $root/$f ] || { echo "not built: $f" >&2; exit 1; }
 done
 
@@ -314,7 +349,18 @@ cmp -s all.list split.list || { echo "file lists differ from the installation:" 
 %files -n kde3-ksnapshot -f kde3-ksnapshot.list
 %license COPYING COPYING-DOCS
 
+%files -n kde3-kweather -f kde3-kweather.list
+%license COPYING COPYING-DOCS
+
+%files -n kde3-kbluetooth -f kde3-kbluetooth.list
+%license COPYING COPYING-DOCS
+
 %changelog
+* Mon Nov 23 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261123-2
+- Snapshot of kde3-revival/kde3-apps commit 75557fb
+- New sub-packages kde3-kweather (panel applet, Open-Meteo) and
+  kde3-kbluetooth (system tray, BlueZ; BuildRequires glib2-devel)
+
 * Mon Nov 23 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261123-1
 - Snapshot of kde3-revival/kde3-apps commit 210f071
 - New package: kdeutils and kdegraphics merged into one source tree, one

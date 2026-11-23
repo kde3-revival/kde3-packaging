@@ -6,7 +6,7 @@
 # kde3-qt and kde3-kdelibs are not in a repository: build them first
 # (../../build.sh does that with the packages in out/).
 
-%global commit     5c2b1eabaa9b5349327accd5b5239f32c8f80c0d
+%global commit     33ef1001d78d3d8088fa38bcd378e7891420d186
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 %global date       20261123
 
@@ -14,7 +14,7 @@
 
 Name:           kde3-kdebase
 Version:        3.5.10+git%{date}
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        KDE 3.5 desktop maintained for kde3-revival
 
 License:        GPL-2.0-or-later AND LGPL-2.0-or-later AND GFDL-1.2-or-later
@@ -71,7 +71,8 @@ BuildRequires:  upower-devel
 # GLES 3 backend draws with EGL on GBM and shares its buffers with the X
 # server as DMA-BUFs through DRI3 (KWIN_HAVE_GLES, else XRender only);
 # Xpresent for tear-free frames; XInput 2.3 and RandR 1.5 for the
-# overview's Super key and hot corner barrier (and the touchpad module).
+# overview's Super key and hot corner barrier, and the touchpad settings
+# (kded_touchpad, the Touchpad tab of kcm_input; kdebase 33ef100).
 BuildRequires:  pkgconfig(egl)
 BuildRequires:  pkgconfig(glesv2)
 BuildRequires:  pkgconfig(gbm)
@@ -204,6 +205,7 @@ for f in bin/kdm bin/kxkb bin/kfontinst bin/ksysguardd \
          lib/kde3/kpowermanager_panelapplet.so share/apps/kicker/applets/kpowermanager.desktop \
          lib/kde3/network_panelapplet.so share/apps/kicker/applets/networkapplet.desktop \
          bin/xdg-desktop-portal-kde3 share/xdg-desktop-portal/portals/kde3.portal \
+         lib/kde3/kded_touchpad.so share/services/kded/touchpad.desktop \
          share/dbus-1/services/org.freedesktop.impl.portal.desktop.kde3.service \
          share/apps/konsole/fonts/fonts.dir \
          share/fontconfig/conf.avail/60-kde3-konsole-fonts.conf; do
@@ -310,6 +312,10 @@ sort -o devel.list devel.list
 %{_unitdir}/kde3-kdm.service
 
 %changelog
+* Mon Nov 23 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261123-2
+- Snapshot of kde3-revival/kde3-kdebase commit 33ef100
+- touchpad settings (kded_touchpad, XInput 2) checked
+
 * Mon Nov 23 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261123-1
 - Snapshot of kde3-revival/kde3-kdebase commit 5c2b1ea
 - KWin composites itself: BuildRequires EGL, GLESv2, GBM, libdrm, xcb
