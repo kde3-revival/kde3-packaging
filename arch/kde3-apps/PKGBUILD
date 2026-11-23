@@ -26,7 +26,8 @@ pkgdesc='KDE 3.5 applications (Ark, KCalc, KView, KSnapshot, ...) maintained for
 arch=(x86_64)
 url='https://github.com/kde3-revival/kde3-apps'
 license=('GPL-2.0-or-later AND GPL-2.0-only AND LGPL-2.0-only AND LGPL-2.0-or-later AND GFDL-1.1-or-later')
-makedepends=(cmake ninja kde3-kdelibs kde3-qt gmp libx11 libxext)
+# tar and gzip: split packages need them at build time (namcap)
+makedepends=(cmake ninja kde3-kdelibs kde3-qt gmp gzip libx11 libxext tar)
 source=("kde3-apps-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz")
 sha256sums=('2205685e14e6ef4fb77e47c92b2def467c2d521895ed8784cd80fc1dac6bbcd6')
 

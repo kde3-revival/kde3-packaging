@@ -108,6 +108,8 @@ Recommends:     mkfontscale
 Requires:       setxkbmap
 Requires:       xrdb
 Suggests:       kde3-kdm
+# KWin's screenshot shortcuts (Print, Shift+Print, Alt+Print) run KSnapshot.
+Suggests:       kde3-ksnapshot
 # DrKonqi runs gdb for the backtrace of a crashed program.
 Suggests:       gdb
 
