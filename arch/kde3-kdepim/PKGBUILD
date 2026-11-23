@@ -27,7 +27,10 @@ license=('GPL-2.0-or-later AND LGPL-2.0-or-later AND (LGPL-2.1-only OR MPL-1.0) 
 depends=(kde3-kdebase kde3-kdelibs kde3-qt glib2 glibc gnupg gpgme libgcc
          libgpg-error libsasl libstdc++ libx11 perl zlib)
 makedepends=(cmake ninja)
-optdepends=('spamassassin: spam filtering (KMail anti-spam wizard)'
+# kde3-wpepart: KMail's reader shows messages with WPE WebKit (its mail
+# mode, kde3-wpepart 0.1.0+git20261123 or later); without it, with KHTML.
+optdepends=('kde3-wpepart: KMail reader with WPE WebKit (else KHTML)'
+            'spamassassin: spam filtering (KMail anti-spam wizard)'
             'clamav: virus filtering (KMail anti-virus wizard)')
 source=("kde3-kdepim-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz")
 sha256sums=('620ea86d941331ece5ef1324662326b740a96dff5366db6686e9f1a0e943268b')

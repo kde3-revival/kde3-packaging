@@ -47,6 +47,11 @@ Requires:       kde3-kdebase%{?_isa}
 Requires:       gnupg2
 Recommends:     gnupg2-smime
 Recommends:     pinentry
+# KMail's reader shows messages with WPE WebKit through kde3-wpepart's
+# part in its mail mode (kdepim d6d4969, the default since f269bae; the
+# mail mode is in kde3-wpepart since 2026-11-23); without it the reader
+# falls back to KHTML.
+Recommends:     (kde3-wpepart%{?_isa} >= 0.1.0+git20261123)
 # The anti-spam and anti-virus wizards of KMail look for these.
 Suggests:       spamassassin
 Suggests:       clamav
@@ -160,6 +165,7 @@ sort -o devel.list devel.list
 %changelog
 * Mon Nov 23 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261123-1
 - Snapshot of kde3-revival/kde3-kdepim commit b9b70a6
+- Recommends kde3-wpepart (KMail's WebKit reader, KHTML fallback)
 
 * Sat Nov 21 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261121-3
 - Snapshot of kde3-revival/kde3-kdepim commit c908bac
