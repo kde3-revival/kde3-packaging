@@ -27,9 +27,10 @@ pkgdesc='KDE 3.5 applications (Ark, KCalc, KView, KSnapshot, KWeather, ...) main
 arch=(x86_64)
 url='https://github.com/kde3-revival/kde3-apps'
 license=('GPL-2.0-or-later AND GPL-2.0-only AND LGPL-2.0-only AND LGPL-2.0-or-later AND GFDL-1.1-or-later')
-# tar and gzip: split packages need them at build time (namcap); glib2:
+# tar, gzip and bluez: split packages need their dependencies at build
+# time (namcap); glib2:
 # kbluetooth talks to BlueZ with GIO's GDBus.
-makedepends=(cmake ninja kde3-kdelibs kde3-qt glib2 gmp gzip libx11 libxext tar)
+makedepends=(bluez cmake ninja kde3-kdelibs kde3-qt glib2 gmp gzip libx11 libxext tar)
 source=("kde3-apps-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz")
 sha256sums=('2344bf001f9f85378e327b4ddaece7a73d6a1cecb910349e4fd52ee43dfa2519')
 
