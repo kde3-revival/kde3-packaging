@@ -9,8 +9,8 @@
 # with the packages in out/).
 
 pkgname=kde3-kdelibs
-_commit=bff1f449ec1abd03ba2a2b2fb2206ec79b975a46
-_date=20261121
+_commit=612905677e0c6b8d3ef41f7d81b34af530e010f5
+_date=20261123
 pkgver=3.5.10+git${_date}
 pkgrel=1
 pkgdesc='KDE 3.5 core libraries maintained for kde3-revival'
@@ -23,20 +23,21 @@ license=('LGPL-2.0-or-later AND GPL-2.0-or-later AND BSD-2-Clause AND GFDL-1.2-o
 # CMake package (find_dependency()).
 depends=(kde3-qt acl avahi brotli bzip2 cairo fontconfig glib2 glibc krb5 libavif
          libcups libgcc libheif libice libidn libjpeg-turbo libjxl libpng libpsl
-         libpulse librsvg libsm libsndfile libstdc++ libthai libtiff libutempter
+         libpulse librsvg libsecret libsm libsndfile libstdc++ libthai libtiff libutempter
          libwebp libx11 libxext libxft libxml2 libxrender libxslt lz4 openssl pcre
-         perl xorg-iceauth xz zlib zstd)
+         perl shared-mime-info xorg-iceauth xz zlib zstd)
 makedepends=(cmake ninja)
 optdepends=('aspell: spell checking (KSpell)'
             'hspell: Hebrew spell checking (KSpell)'
-            'cups: printing')
+            'cups: printing'
+            'gnome-keyring: wallets in the Secret Service (kwalletd)')
 backup=(etc/profile.d/kde3.sh etc/profile.d/kde3.csh)
 source=("kde3-kdelibs-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz"
         kde3.sh
         kde3.csh
         KDE3LibsConfig.cmake
         KDE3LibsConfigVersion.cmake)
-sha256sums=('bffa417fa30bc78bc16f6406b1cd6815fae303f492eb77c7c4198a0863ba9d40'
+sha256sums=('ff86fab52574ebf3f163e24765a60f069b2153ed71f0d5bb3b176ddf216705e7'
             '8bc43d087aa2ac1aacecb27b038ad274d5298a0a8078fe87b544b561be038c17'
             '93f0ad67b86ae04c9460cdb31401ec89f5547dcd9788db3f2fbcddaccdb7e202'
             '6e72cca77496e941f7114654812862427ebc3f0c6e83a7d846f9bec7744a825e'
@@ -65,7 +66,8 @@ build() {
   local have
   for have in HAVE_SSL HAVE_LIBIDN HAVE_LIBPSL HAVE_LIBGSSAPI HAVE_DNSSD \
               HAVE_PCREPOSIX HAVE_PULSEAUDIO HAVE_LIBTIFF HAVE_UTEMPTER \
-              USE_POSIX_ACL HAVE_LIBTHAI HAVE_INOTIFY HAVE_CUPS HAVE_LIBRSVG; do
+              USE_POSIX_ACL HAVE_LIBTHAI HAVE_INOTIFY HAVE_CUPS HAVE_LIBRSVG \
+              HAVE_LIBSECRET HAVE_LIBBROTLIDEC HAVE_LIBLZ4; do
     grep -q "^#define $have 1" build/config.h || { error "configure: $have not set"; return 1; }
   done
   cmake --build build

@@ -6,9 +6,9 @@
 # kde3-qt is not in a repository: build it first (../../build.sh does that
 # with the packages in out/).
 
-%global commit     bff1f449ec1abd03ba2a2b2fb2206ec79b975a46
+%global commit     612905677e0c6b8d3ef41f7d81b34af530e010f5
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global date       20261121
+%global date       20261123
 
 %global kde3dir    /opt/kde3
 %global qtdir      /opt/kde3-qt
@@ -45,6 +45,8 @@ BuildRequires:  libidn-devel
 BuildRequires:  libjpeg-turbo-devel
 BuildRequires:  libpng-devel
 BuildRequires:  libpsl-devel
+# kwalletd's Secret Service backend (kdelibs 039c948 and later)
+BuildRequires:  libsecret-devel
 BuildRequires:  librsvg2-devel
 BuildRequires:  libSM-devel
 BuildRequires:  libsndfile-devel
@@ -72,12 +74,20 @@ BuildRequires:  lz4-devel
 BuildRequires:  openssl-devel
 BuildRequires:  xz-devel
 BuildRequires:  pulseaudio-libs-devel
-BuildRequires:  zlib-devel
+# kdelibs 6129056 and later: zlib 1.2.4 or later (inflate of the zlib-wrapped
+# "deflate" content encoding in kio_http); zstd and Brotli decoders as well.
+BuildRequires:  zlib-devel >= 1.2.4
 
 # dcopserver runs iceauth.
 Requires:       iceauth
 Requires:       kde3-qt%{?_isa}
+# ksycoca and KMimeMagic read the MIME types and magic of shared-mime-info
+# (kdelibs 23a2b54, fa1cb1a and later).
+Requires:       shared-mime-info
 Suggests:       aspell
+# kwalletd keeps the wallets in the Secret Service when one is running
+# (the GNOME login keyring); otherwise the classic wallet files.
+Suggests:       gnome-keyring
 
 %description
 kdelibs 3.5.10 as maintained by the kde3-revival project: the core
@@ -134,7 +144,8 @@ makekdewidgets.
 # Fail instead of silently building without an optional feature.
 for have in HAVE_SSL HAVE_LIBIDN HAVE_LIBPSL HAVE_LIBGSSAPI HAVE_DNSSD \
             HAVE_PULSEAUDIO HAVE_LIBTIFF HAVE_UTEMPTER USE_POSIX_ACL \
-            HAVE_LIBTHAI HAVE_INOTIFY HAVE_CUPS HAVE_LIBRSVG; do
+            HAVE_LIBTHAI HAVE_INOTIFY HAVE_CUPS HAVE_LIBRSVG HAVE_LIBSECRET \
+            HAVE_LIBBROTLIDEC HAVE_LIBLZ4; do
     grep -q "^#define $have 1" %{__cmake_builddir}/config.h || { echo "configure: $have not set" >&2; exit 1; }
 done
 %cmake_build
@@ -203,6 +214,11 @@ sed -i 's|^\(.*\)$|"\1"|' devel.list
 %{_libdir}/cmake/KDE3Libs
 
 %changelog
+* Mon Nov 23 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261123-1
+- Snapshot of kde3-revival/kde3-kdelibs commit 6129056
+- BuildRequires libsecret-devel (kwalletd's Secret Service backend) and
+  zlib-devel >= 1.2.4; Requires shared-mime-info
+
 * Sat Nov 21 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261121-1
 - Snapshot of kde3-revival/kde3-kdelibs commit bff1f44
 
