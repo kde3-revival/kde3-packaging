@@ -84,9 +84,11 @@ _install() {
 
 package_kde3-apps() {
   pkgdesc='KDE 3.5 applications of kde3-revival (all of them: Ark, KCalc, KCharSelect, KDiskFree, KHexEdit, KTimer, KWalletManager, KView, KRuler, KSnapshot)'
-  depends=(kde3-ark kde3-kcalc kde3-kcharselect kde3-kdf kde3-khexedit kde3-ktimer
-           kde3-kwalletmanager kde3-kview kde3-kruler kde3-ksnapshot)
-  depends=("${depends[@]/%/=${pkgver}-${pkgrel}}")
+  depends=("kde3-ark=${pkgver}-${pkgrel}" "kde3-kcalc=${pkgver}-${pkgrel}"
+           "kde3-kcharselect=${pkgver}-${pkgrel}" "kde3-kdf=${pkgver}-${pkgrel}"
+           "kde3-khexedit=${pkgver}-${pkgrel}" "kde3-ktimer=${pkgver}-${pkgrel}"
+           "kde3-kwalletmanager=${pkgver}-${pkgrel}" "kde3-kview=${pkgver}-${pkgrel}"
+           "kde3-kruler=${pkgver}-${pkgrel}" "kde3-ksnapshot=${pkgver}-${pkgrel}")
   replaces=("kde3-kdeutils<${_replaced}" "kde3-kdegraphics<${_replaced}")
   conflicts=("kde3-kdeutils<${_replaced}" "kde3-kdegraphics<${_replaced}")
   install -Dm644 -t "${pkgdir}/usr/share/doc/${pkgname}" kde3-apps-${_commit}/{README.md,AUTHORS}
