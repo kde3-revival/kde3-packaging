@@ -1,0 +1,202 @@
+# Maintainer: Serghei Amelian <serghei.amelian@gmail.com>
+#
+# kde3-apps (the applications of kdeutils and kdegraphics 3.5.10 as
+# maintained by kde3-revival), installed in /opt/kde3: one source tree,
+# one package per application.
+# Snapshot of a fixed commit; run ../../bump.sh kde3-apps to move to the
+# latest commit of the master branch (updates _commit, _date, pkgver,
+# pkgrel and sha256sums).
+#
+# kde3-qt and kde3-kdelibs are not in a repository: build them first
+# (../../build.sh does that with the packages in out/).
+#
+# kde3-apps replaces kde3-kdeutils and kde3-kdegraphics: the package
+# kde3-apps itself (all applications) replaces them, so "pacman -Syu"
+# installs every application they had; each application's package
+# conflicts with the old package that held its files.
+
+pkgbase=kde3-apps
+pkgname=(kde3-apps kde3-ark kde3-kcalc kde3-kcharselect kde3-kdf kde3-khexedit
+         kde3-ktimer kde3-kwalletmanager kde3-kview kde3-kruler kde3-ksnapshot)
+_commit=210f071ba2a329762d39297ee8ba8f7ed1ad7be3
+_date=20261123
+pkgver=3.5.10+git${_date}
+pkgrel=1
+pkgdesc='KDE 3.5 applications (Ark, KCalc, KView, KSnapshot, ...) maintained for kde3-revival'
+arch=(x86_64)
+url='https://github.com/kde3-revival/kde3-apps'
+license=('GPL-2.0-or-later AND GPL-2.0-only AND LGPL-2.0-only AND LGPL-2.0-or-later AND GFDL-1.1-or-later')
+makedepends=(cmake ninja kde3-kdelibs kde3-qt gmp libx11 libxext)
+source=("kde3-apps-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz")
+sha256sums=('2205685e14e6ef4fb77e47c92b2def467c2d521895ed8784cd80fc1dac6bbcd6')
+
+_prefix=/opt/kde3
+# kde3-kdeutils and kde3-kdegraphics older than that are replaced
+_replaced=3.5.10+git20261123
+# the libraries of every application
+_kdedeps=(kde3-kdelibs kde3-qt glibc libgcc libstdc++)
+
+build() {
+  # The prefix, the library directory (/opt/kde3/lib) and the RUNPATH come
+  # from kdelibs' CMake package.  CMAKE_BUILD_TYPE=None: the distribution
+  # flags only.  Every application is switched on explicitly
+  # (KDE3_APPS_KCALC and KDE3_APPS_KSNAPSHOT_XSHAPE fail without GMP and
+  # the Shape extension).
+  cmake -S kde3-apps-${_commit} -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=None \
+    -DKDE3_APPS_ARK=ON \
+    -DKDE3_APPS_KCALC=ON \
+    -DKDE3_APPS_KCHARSELECT=ON \
+    -DKDE3_APPS_KDF=ON \
+    -DKDE3_APPS_KHEXEDIT=ON \
+    -DKDE3_APPS_KTIMER=ON \
+    -DKDE3_APPS_KWALLET=ON \
+    -DKDE3_APPS_KVIEW=ON \
+    -DKDE3_APPS_KRULER=ON \
+    -DKDE3_APPS_KSNAPSHOT=ON \
+    -DKDE3_APPS_KSNAPSHOT_XSHAPE=ON
+  grep -qx "CMAKE_INSTALL_PREFIX:PATH=${_prefix}" build/CMakeCache.txt ||
+    { error "configure: install prefix is not ${_prefix}"; return 1; }
+  local have
+  for have in HAVE_GMP HAVE_LONG_DOUBLE HAVE_L_FUNCS HAVE_X11_EXTENSIONS_SHAPE_H; do
+    grep -q "^#define $have 1" build/config.h || { error "configure: $have not set"; return 1; }
+  done
+  cmake --build build
+}
+
+# _install <directory> [<more directories>]: what the install scripts of
+# an application's build directory and of its handbook (doc/<directory>)
+# install, checked for the given files.  libkhexeditcommon (the khexedit2
+# part) and libkimageviewer (KView's parts) install no headers: their
+# unversioned links are of no use.
+_install() {
+  local d f root=${pkgdir}${_prefix}
+  for d in "$1" "doc/$1" "${@:2}"; do
+    DESTDIR="${pkgdir}" cmake --install build/$d >/dev/null
+  done
+  for f in "${_files[@]}"; do
+    [[ -e ${root}/$f ]] || { error "not built: $f"; return 1; }
+  done
+  rm -f "${root}"/lib/{libkhexeditcommon,libkimageviewer}.so
+  install -Dm644 -t "${pkgdir}/usr/share/licenses/${pkgname}" \
+    kde3-apps-${_commit}/{COPYING,COPYING-DOCS}
+}
+
+package_kde3-apps() {
+  pkgdesc='KDE 3.5 applications of kde3-revival (all of them: Ark, KCalc, KCharSelect, KDiskFree, KHexEdit, KTimer, KWalletManager, KView, KRuler, KSnapshot)'
+  depends=(kde3-ark kde3-kcalc kde3-kcharselect kde3-kdf kde3-khexedit kde3-ktimer
+           kde3-kwalletmanager kde3-kview kde3-kruler kde3-ksnapshot)
+  depends=("${depends[@]/%/=${pkgver}-${pkgrel}}")
+  replaces=("kde3-kdeutils<${_replaced}" "kde3-kdegraphics<${_replaced}")
+  conflicts=("kde3-kdeutils<${_replaced}" "kde3-kdegraphics<${_replaced}")
+  install -Dm644 -t "${pkgdir}/usr/share/doc/${pkgname}" kde3-apps-${_commit}/{README.md,AUTHORS}
+  install -Dm644 -t "${pkgdir}/usr/share/licenses/${pkgname}" \
+    kde3-apps-${_commit}/{COPYING,COPYING-DOCS}
+}
+
+package_kde3-ark() {
+  pkgdesc='Archive manager for KDE 3.5 (kde3-revival)'
+  license=('GPL-2.0-or-later AND GFDL-1.1-or-later')
+  # Ark drives command line tools: tar, gzip and bzip2 for its basic
+  # formats; the others are looked up when an archive of their kind is
+  # opened.
+  depends=("${_kdedeps[@]}" bzip2 gzip tar)
+  optdepends=('xz: .tar.xz and .xz archives'
+              'zstd: .tar.zst and .zst archives'
+              'lz4: .tar.lz4 and .lz4 archives'
+              'zip: creating and changing .zip archives'
+              'unzip: .zip and .jar archives'
+              '7zip: 7-Zip archives'
+              'unrar: RAR archives (read-only)'
+              'lzop: .tar.lzo and .lzo archives')
+  conflicts=("kde3-kdeutils<${_replaced}")
+  local _files=(bin/ark lib/kde3/libarkpart.so)
+  _install ark
+}
+
+package_kde3-kcalc() {
+  pkgdesc='Scientific calculator for KDE 3.5 (kde3-revival)'
+  license=('GPL-2.0-or-later AND LGPL-2.0-or-later AND GFDL-1.1-or-later')
+  depends=("${_kdedeps[@]}" gmp)
+  conflicts=("kde3-kdeutils<${_replaced}")
+  local _files=(bin/kcalc)
+  _install kcalc
+}
+
+package_kde3-kcharselect() {
+  pkgdesc='Character selector for KDE 3.5 (kde3-revival)'
+  license=('GPL-2.0-or-later AND GFDL-1.1-or-later')
+  depends=("${_kdedeps[@]}")
+  conflicts=("kde3-kdeutils<${_replaced}")
+  local _files=(bin/kcharselect)
+  _install kcharselect
+}
+
+package_kde3-kdf() {
+  pkgdesc='Disk space viewer for KDE 3.5, with KwikDisk and a Control Center module (kde3-revival)'
+  license=('GPL-2.0-or-later AND GFDL-1.1-or-later')
+  # KDiskFree runs df, and mounts and unmounts through udisksctl.
+  depends=("${_kdedeps[@]}" coreutils)
+  optdepends=('udisks2: mounting and unmounting disks as a normal user')
+  conflicts=("kde3-kdeutils<${_replaced}")
+  local _files=(bin/kdf bin/kwikdisk lib/kde3/kcm_kdf.so)
+  _install kdf doc/kinfocenter
+}
+
+package_kde3-khexedit() {
+  pkgdesc='Binary file editor for KDE 3.5, with the KHexEdit2 part (kde3-revival)'
+  license=('GPL-2.0-or-later AND LGPL-2.0-only AND GFDL-1.1-or-later')
+  depends=("${_kdedeps[@]}")
+  conflicts=("kde3-kdeutils<${_replaced}")
+  local _files=(bin/khexedit lib/kde3/libkhexedit2part.so)
+  _install khexedit
+}
+
+package_kde3-ktimer() {
+  pkgdesc='Countdown launcher for KDE 3.5 (kde3-revival)'
+  license=('GPL-2.0-or-later AND GFDL-1.1-or-later')
+  depends=("${_kdedeps[@]}")
+  conflicts=("kde3-kdeutils<${_replaced}")
+  local _files=(bin/ktimer)
+  _install ktimer
+}
+
+package_kde3-kwalletmanager() {
+  pkgdesc='Wallet manager for KDE 3.5, with its Control Center module (kde3-revival)'
+  license=('GPL-2.0-or-later AND GFDL-1.1-or-later')
+  depends=("${_kdedeps[@]}")
+  conflicts=("kde3-kdeutils<${_replaced}")
+  local _files=(bin/kwalletmanager lib/kde3/kcm_kwallet.so)
+  _install kwallet
+}
+
+package_kde3-kview() {
+  pkgdesc='Image viewer for KDE 3.5, with its viewer part and plugins (kde3-revival)'
+  license=('GPL-2.0-only AND GPL-2.0-or-later AND LGPL-2.0-only AND GFDL-1.1-or-later')
+  depends=("${_kdedeps[@]}")
+  conflicts=("kde3-kdegraphics<${_replaced}")
+  local _files=(bin/kview lib/kde3/libkviewviewer.so lib/kde3/libkviewcanvas.so)
+  _install kview
+}
+
+package_kde3-kruler() {
+  pkgdesc='Screen ruler for KDE 3.5 (kde3-revival)'
+  license=('GPL-2.0-or-later AND GFDL-1.1-or-later')
+  depends=("${_kdedeps[@]}")
+  conflicts=("kde3-kdegraphics<${_replaced}")
+  local _files=(bin/kruler)
+  _install kruler
+}
+
+package_kde3-ksnapshot() {
+  pkgdesc='Screen capture program for KDE 3.5 (kde3-revival)'
+  license=('GPL-2.0-or-later AND LGPL-2.0-or-later AND GFDL-1.1-or-later')
+  # libxext: the Shape extension (shaped windows cut to their shape).
+  depends=("${_kdedeps[@]}" libx11 libxext)
+  # KWin's screenshot shortcuts (Print, Shift+Print, Alt+Print) run
+  # KSnapshot.
+  optdepends=('kde3-kdebase: the Print key takes screenshots with KSnapshot (KWin)')
+  conflicts=("kde3-kdegraphics<${_replaced}")
+  local _files=(bin/ksnapshot)
+  _install ksnapshot
+}

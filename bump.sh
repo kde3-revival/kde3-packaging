@@ -34,8 +34,7 @@ declare -A repo=(
     [kde3-kdelibs]=kde3-revival/kde3-kdelibs
     [kde3-kdebase]=kde3-revival/kde3-kdebase
     [kde3-kdepim]=kde3-revival/kde3-kdepim
-    [kde3-kdegraphics]=kde3-revival/kde3-kdegraphics
-    [kde3-kdeutils]=kde3-revival/kde3-kdeutils
+    [kde3-apps]=kde3-revival/kde3-apps
     [kde3-wpepart]=kde3-revival/kde3-wpepart
 )
 r=${repo[$pkg]:-}

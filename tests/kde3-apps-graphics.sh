@@ -1,7 +1,8 @@
 #!/bin/bash
-# Smoke test for the installed kde3-kdegraphics package; run by "./build.sh
-# test" as an unprivileged user in a login shell (so /etc/profile.d is
-# sourced).
+# Smoke test for the applications of kde3-apps that were kdegraphics
+# (kde3-kview, kde3-kruler, kde3-ksnapshot); run by tests/kde3-apps.sh
+# ("./build.sh test") as an unprivileged user in a login shell (so
+# /etc/profile.d is sourced).
 set -euo pipefail
 
 . "$(dirname "$0")/common.sh"
@@ -17,9 +18,9 @@ step "all ELF files resolve, RUNPATH only into /opt/kde3 and /opt/kde3-qt"
 check_elf $KDEDIR $KDEDIR/lib /opt/kde3-qt/lib
 
 if command -v pacman >/dev/null; then
-    files=$(pacman -Qlq kde3-kdegraphics)
+    files=$(pacman -Qlq kde3-kview kde3-kruler kde3-ksnapshot)
 else
-    files=$(rpm -ql kde3-kdegraphics)
+    files=$(rpm -ql kde3-kview kde3-kruler kde3-ksnapshot)
 fi
 
 step "every X-KDE-Library of kdegraphics' services is installed and exports its entry point"

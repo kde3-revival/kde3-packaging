@@ -1,6 +1,8 @@
 #!/bin/bash
-# Smoke test for the installed kde3-kdeutils package; run by "./build.sh
-# test" as an unprivileged user in a login shell (so /etc/profile.d is
+# Smoke test for the applications of kde3-apps that were kdeutils
+# (kde3-ark, kde3-kcalc, kde3-kcharselect, kde3-kdf, kde3-khexedit,
+# kde3-ktimer, kde3-kwalletmanager); run by tests/kde3-apps.sh ("./build.sh
+# test") as an unprivileged user in a login shell (so /etc/profile.d is
 # sourced).  build.sh installs the optional archivers Ark drives (xz,
 # zstd, lz4, zip, unzip, 7zip, unrar where the distribution has them);
 # the Ark round trips are run for each format whose tool is there.
@@ -19,9 +21,9 @@ step "all ELF files resolve, RUNPATH only into /opt/kde3 and /opt/kde3-qt"
 check_elf $KDEDIR $KDEDIR/lib /opt/kde3-qt/lib
 
 if command -v pacman >/dev/null; then
-    files=$(pacman -Qlq kde3-kdeutils)
+    files=$(pacman -Qlq kde3-ark kde3-kcalc kde3-kcharselect kde3-kdf kde3-khexedit kde3-ktimer kde3-kwalletmanager)
 else
-    files=$(rpm -ql kde3-kdeutils)
+    files=$(rpm -ql kde3-ark kde3-kcalc kde3-kcharselect kde3-kdf kde3-khexedit kde3-ktimer kde3-kwalletmanager)
 fi
 
 step "every X-KDE-Library of kdeutils' services is installed and exports its entry point"

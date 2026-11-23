@@ -17,11 +17,11 @@ Distribution packages for the kde3-revival projects.
     ./build.sh test fedora kde3-qt    # container and run tests/kde3-qt.sh
 
 The packages are built in dependency order: kde3-qt, kde3-kdelibs,
-kde3-kdebase, kde3-kdepim, kde3-kdegraphics, kde3-kdeutils.  A package's kde3-revival dependencies are not taken from a
+kde3-kdebase, kde3-kdepim, kde3-apps.  A package's kde3-revival dependencies are not taken from a
 repository but installed into the container from `out/<distro>/`, so
 build those first:
 
-    for p in kde3-qt kde3-kdelibs kde3-kdebase kde3-kdepim kde3-kdegraphics kde3-kdeutils; do
+    for p in kde3-qt kde3-kdelibs kde3-kdebase kde3-kdepim kde3-apps; do
         ./build.sh arch $p && ./build.sh test arch $p
     done
 
@@ -33,7 +33,7 @@ user inside the container; `JOBS` sets the parallelism (default `nproc`).
 
 Packages are snapshots of a fixed upstream commit, versioned
 `<version>+git<YYYYMMDD>` (3.3.8b for kde3-qt, 3.5.10 for kdelibs,
-kdebase, kdepim, kdegraphics and kdeutils; committer date of the commit, UTC).  To move to the current head
+kdebase, kdepim and kde3-apps; committer date of the commit, UTC).  To move to the current head
 of master (or a given commit):
 
     ./bump.sh <package> [commit]
@@ -42,8 +42,8 @@ This updates the commit, date, checksums and pkgrel/Release (back to 1, or
 +1 when the new commit has the same date) in both recipes and adds a Fedora
 changelog entry; review with `git diff` and commit.
 
-A repository that cannot be downloaded (kde3-kdepim, kde3-kdegraphics and
-kde3-kdeutils are private for now) is taken from a local clone:
+A repository that cannot be downloaded (kde3-kdepim, for example, is
+private for now) is taken from a local clone:
 
     CLONE=../kde3-kdepim ./bump.sh kde3-kdepim
 
@@ -80,7 +80,7 @@ pkg-config add `-Wl,-rpath,$(pkg-config --variable=libdir kde3-qt)`.
 
 On Arch the development files stay in the main package, as usual there.
 
-## kde3-kdelibs, kde3-kdebase, kde3-kdepim, kde3-kdegraphics
+## kde3-kdelibs, kde3-kdebase, kde3-kdepim, kde3-apps
 
 Installed in `/opt/kde3` (the default prefix of kdelibs' CMake build), with
 the libraries in `/opt/kde3/lib` also on 64-bit Fedora: /opt trees are not
@@ -133,8 +133,19 @@ bit of scripts).
 |                    | kde3-kdm            | kdm, its configuration and themes, kcm_kdm, PAM service kde3-np, kde3-kdm.service |
 | kde3-kdepim        | kde3-kdepim         | KMail, KOrganizer, KAddressBook, Kontact, Kleopatra, KWatchGnuPG, KMailCvt, imap4/sieve/mbox ioslaves, libraries |
 |                    | kde3-kdepim-devel   | headers and .so links of libkcal, libkmime, mimelib, libkdepim, gpgme++, Kleo, ... |
-| kde3-kdegraphics   | kde3-kdegraphics    | KView (+ viewer part and plugins), KSnapshot, KRuler, their handbooks |
-| kde3-kdeutils      | kde3-kdeutils       | Ark (+ part), KCalc, KCharSelect, KDiskFree/KwikDisk (+ kcm_kdf), KHexEdit (+ khexedit2 part), KTimer, KWalletManager (+ kcm_kwallet), their handbooks |
+| kde3-apps          | kde3-apps           | nothing of its own: depends on all the packages below (replaces kde3-kdeutils and kde3-kdegraphics) |
+| kde3-ark           | kde3-ark            | Ark (+ part) |
+| kde3-kcalc         | kde3-kcalc          | KCalc |
+| kde3-kcharselect   | kde3-kcharselect    | KCharSelect |
+| kde3-kdf           | kde3-kdf            | KDiskFree, KwikDisk, kcm_kdf (+ its KInfoCenter handbook) |
+| kde3-khexedit      | kde3-khexedit       | KHexEdit (+ khexedit2 part, libkhexeditcommon) |
+| kde3-ktimer        | kde3-ktimer         | KTimer |
+| kde3-kwalletmanager| kde3-kwalletmanager | KWalletManager (+ kcm_kwallet) |
+| kde3-kview         | kde3-kview          | KView (+ viewer part and plugins, libkimageviewer) |
+| kde3-kruler        | kde3-kruler         | KRuler |
+| kde3-ksnapshot     | kde3-ksnapshot      | KSnapshot |
+
+Each application's package has its handbook.
 
 On Fedora kdm is a sub-package of its own, so that installing the desktop
 for a session started from GDM/SDDM does not install a second display
@@ -152,16 +163,26 @@ the filter is not built), without the experimental full-text index
 of KMail (indexlib) and with logind support (GIO: KMail disconnects
 before the machine sleeps).
 
-kde3-kdegraphics is only KView, KSnapshot and KRuler; it needs no more
-than kdelibs.  The image formats KView reads and KSnapshot writes are
-those of kde3-qt and of kdelibs' kimgio plugins.  The Print key starts
-KSnapshot through khotkeys of kde3-kdebase (an optional dependency /
-Recommends).  The unversioned link of libkimageviewer (used only by
-KView's parts, no headers) is not packaged, so there is no -devel
+kde3-apps is the source tree of the applications of kdeutils and
+kdegraphics (kde3-revival/kde3-apps, which replaces the kde3-kdeutils and
+kde3-kdegraphics repositories), built once with every KDE3_APPS_<APP>
+option on and split into one package per application.  The file list of
+a package is what the install scripts of the application's build
+directory and of its handbook (doc/<application>; doc/kinfocenter for
+KDiskFree) install; the Fedora spec checks that every installed file is
+in exactly one package.  The package kde3-apps depends on all of them and
+replaces (Fedora: obsoletes) kde3-kdeutils and kde3-kdegraphics, so an
+upgrade installs every application they had; each application's package
+conflicts with the old package that held its files.  The applications
+need no more than kdelibs (and GMP for KCalc, libXext for KSnapshot).
+The image formats KView reads and KSnapshot writes are those of kde3-qt
+and of kdelibs' kimgio plugins.  KWin's screenshot shortcuts (Print,
+Shift+Print, Alt+Print) run KSnapshot (kde3-kdebase: an optional
+dependency / Recommends of kde3-ksnapshot).  The unversioned links of
+libkimageviewer (KView's parts) and libkhexeditcommon (the khexedit2
+part) install no headers and are not packaged, so there is no -devel
 package.
 
-kde3-kdeutils is Ark, KCalc, KCharSelect, KDiskFree, KHexEdit, KTimer
-and KWalletManager; it needs no more than kdelibs (and GMP for KCalc).
 Ark drives the archivers on the command line: tar, gzip and bzip2 are
 dependencies, xz, zstd, lz4, zip/unzip, 7zip (7z, 7za or 7zz), unrar and
 lzop optional ones (Fedora: Recommends; unrar, which Fedora does not
@@ -169,9 +190,7 @@ have, and lzop: Suggests).  Ark's xz, zstd and lz4 formats need the mime
 types kdelibs has since 2026-11-21.  KDiskFree mounts and unmounts
 through udisksctl when udisks2 is installed.  The test also runs Ark
 round trips (create, list, extract) for each format whose tool is
-installed in the test container.  The unversioned link of
-libkhexeditcommon (used only by the khexedit2 part, no headers) is not
-packaged, so there is no -devel package.
+installed in the test container.
 
 kde3-qt runs its event loop on GLib's main context (QT_GLIB_EVENTLOOP,
 the configure default), which the GIO/GDBus code of kdebase (sleep and

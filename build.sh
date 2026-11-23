@@ -9,9 +9,8 @@
 #
 #   <package>: kde3-qt, kde3-kdelibs (needs kde3-qt), kde3-kdebase (needs
 #              kde3-qt and kde3-kdelibs), kde3-kdepim (needs kde3-qt,
-#              kde3-kdelibs and kde3-kdebase), kde3-kdegraphics (needs kde3-qt
-#              and kde3-kdelibs), kde3-kdeutils (needs kde3-qt and
-#              kde3-kdelibs), wpewebkit (Fedora only: Arch has it),
+#              kde3-kdelibs and kde3-kdebase), kde3-apps (needs kde3-qt
+#              and kde3-kdelibs), wpewebkit (Fedora only: Arch has it),
 #              kde3-wpepart (needs kde3-qt, kde3-kdelibs and, on Fedora,
 #              wpewebkit).  The packages a package needs are
 #              not taken from a repository: build them first; their
@@ -50,8 +49,7 @@ declare -A deps=(
     [kde3-kdelibs]="kde3-qt"
     [kde3-kdebase]="kde3-qt kde3-kdelibs"
     [kde3-kdepim]="kde3-qt kde3-kdelibs kde3-kdebase"
-    [kde3-kdegraphics]="kde3-qt kde3-kdelibs"
-    [kde3-kdeutils]="kde3-qt kde3-kdelibs"
+    [kde3-apps]="kde3-qt kde3-kdelibs"
     [wpewebkit]=""
     [kde3-wpepart]="kde3-qt kde3-kdelibs wpewebkit"
 )
@@ -59,8 +57,8 @@ declare -A deps=(
 # Distribution packages a test needs besides the package itself (the
 # optional tools it exercises).
 declare -A test_extra=(
-    [arch:kde3-kdeutils]="xz zstd lz4 zip unzip 7zip unrar"
-    [fedora:kde3-kdeutils]="xz zstd lz4 zip unzip 7zip"
+    [arch:kde3-apps]="xz zstd lz4 zip unzip 7zip unrar"
+    [fedora:kde3-apps]="xz zstd lz4 zip unzip 7zip"
     [arch:kde3-wpepart]="xorg-xwd xorg-xwininfo netpbm python"
     [fedora:kde3-wpepart]="xwd xwininfo netpbm-progs python3"
 )
@@ -118,6 +116,7 @@ DEPS="$DEPS $PKG"
 '$arch_deps'
 useradd -m tester
 cp /src/tests/$PKG.sh /src/tests/common.sh /home/tester/
+cp /src/tests/$PKG-*.sh /home/tester/ 2>/dev/null || true
 su - tester -c "bash -l ./$PKG.sh"
 '
 
@@ -165,6 +164,7 @@ DEPS="$DEPS $PKG"
 '$fedora_deps'
 useradd -m tester
 cp /src/tests/$PKG.sh /src/tests/common.sh /home/tester/
+cp /src/tests/$PKG-*.sh /home/tester/ 2>/dev/null || true
 su - tester -c "bash -l ./$PKG.sh"
 '
 
