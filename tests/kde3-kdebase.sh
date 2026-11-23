@@ -77,8 +77,9 @@ step "KWin compositor"
 [[ ! -e $KDEDIR/bin/kompmgr ]] || fail "kompmgr is still installed"
 kwinlib=$KDEDIR/lib/libkdeinit_kwin.so
 [[ -f $kwinlib ]] || kwinlib=$KDEDIR/lib/kde3/kwin.so
-for l in libEGL libGLESv2 libgbm libdrm libxcb-dri3 libxshmfence libXpresent libXi libXrender; do
-    ldd $kwinlib | grep -q "$l\.so" || fail "kwin not linked to $l"
+kwinldd=$(ldd $kwinlib)   # not piped into grep -q: SIGPIPE with pipefail
+for l in libEGL libGLESv2 libgbm libxcb-dri3 libxshmfence libXpresent libXi libXrender; do
+    grep -q "$l\.so" <<<"$kwinldd" || fail "kwin not linked to $l"
 done
 echo ok
 
