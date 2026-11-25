@@ -56,7 +56,7 @@ while read -r desktop; do
     if [[ -z $found ]]; then
         echo "$desktop: X-KDE-Library=$lib: no ${cands// /.so or }.so"
         errors=$((errors + 1))
-    elif ! nm -D --defined-only "$found" | grep -Eq " T ($sym)$"; then
+    elif ! exports "$found" "$sym"; then
         echo "$desktop: $found does not export $sym"
         errors=$((errors + 1))
     fi
@@ -72,9 +72,7 @@ mkdir -p "$KDEHOME/share/config"
 
 step "programs answer --help"
 for app in ark kcalc kcharselect kdf kwikdisk khexedit ktimer kwalletmanager; do
-    # KCmdLineArgs exits with 254 after --help
-    out=$(HOME=$work timeout 20 "$app" --help 2>&1 </dev/null) || true
-    grep -qi '^usage:' <<<"$out" || { echo "$out"; fail "$app --help"; }
+    HOME=$work answers_help "$app"
     echo "$app: ok"
 done
 

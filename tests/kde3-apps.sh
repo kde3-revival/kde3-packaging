@@ -26,12 +26,14 @@ if command -v pacman >/dev/null; then
     owner() { pacman -Qqo "$1"; }
 else
     for p in kde3-apps $apps; do rpm -q $p >/dev/null || fail "$p not installed"; done
-    rpm -q --obsoletes kde3-apps
+    obsoletes=$(rpm -q --obsoletes kde3-apps)
+    requires=$(rpm -q --requires kde3-apps)
+    echo "$obsoletes"
     for p in kde3-kdeutils kde3-kdegraphics; do
-        rpm -q --obsoletes kde3-apps | grep -q "^$p < " || fail "kde3-apps does not obsolete $p"
+        grep -q "^$p < " <<<"$obsoletes" || fail "kde3-apps does not obsolete $p"
     done
     for p in $apps; do
-        rpm -q --requires kde3-apps | grep -q "^$p(x86-64) = " || fail "kde3-apps does not require $p"
+        grep -q "^$p(x86-64) = " <<<"$requires" || fail "kde3-apps does not require $p"
     done
     owner() { rpm -qf --qf '%{NAME}\n' "$1"; }
 fi
@@ -63,13 +65,9 @@ echo ok
 
 step "kweather and kbluetooth"
 # the applet's entry point for kicker, the programs' command lines
-nm -D --defined-only /opt/kde3/lib/kde3/weather_panelapplet.so | grep -q ' T init$' ||
+exports /opt/kde3/lib/kde3/weather_panelapplet.so init ||
     fail "weather_panelapplet does not export init()"
-for p in kweatherservice kbluetooth; do
-    # KCmdLineArgs exits with 254 after --help
-    out=$(timeout 20 $p --help 2>&1 </dev/null) || true
-    grep -qi '^usage:' <<<"$out" || { echo "$out"; fail "$p --help"; }
-done
+for p in kweatherservice kbluetooth; do answers_help $p; done
 grep -q 'libgio-2\.0\.so' <<<"$(ldd /opt/kde3/bin/kbluetooth)" || fail "kbluetooth not linked to GIO"
 echo ok
 

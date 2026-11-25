@@ -3,6 +3,25 @@
 fail() { echo "FAIL: $*" >&2; exit 1; }
 step() { echo; echo "=== $*"; }
 
+# The output of a command is captured before it is searched: in
+# "cmd | grep -q", grep exits at the first match and, under pipefail, the
+# SIGPIPE that cmd gets then fails the pipeline.
+
+# exports <file> <ERE>: the shared object defines a function matching ERE.
+exports() {
+    grep -Eq " T ($2)\$" <<<"$(nm -D --defined-only "$1")"
+}
+
+# answers_help <program>: "<program> --help" prints the usage text and
+# exits with 0 or 254 (KCmdLineArgs exits with 254 after --help); a
+# timeout (124), a crash or any other status fails the test.
+answers_help() {
+    local out rc=0
+    out=$(timeout 20 "$1" --help 2>&1 </dev/null) || rc=$?
+    [[ $rc == 0 || $rc == 254 ]] || { echo "$out"; fail "$1 --help exited with $rc"; }
+    grep -qi '^usage:' <<<"$out" || { echo "$out"; fail "$1 --help printed no usage text"; }
+}
+
 # ldd -r of a module (or a library meant for one program) reports the
 # symbols it takes from the program that loads it.  Known ones:
 #   kded modules: KDEDModule, from kded (LIB_KDED is empty on Linux);
@@ -21,7 +40,7 @@ check_elf() {   # check_elf <dir> <allowed RUNPATH dirs...>
     while IFS= read -r -d '' f; do
         head -c4 "$f" | grep -q $'\x7fELF' || continue
         n=$((n + 1))
-        if ldd "$f" 2>/dev/null | grep -q 'not found'; then
+        if grep -q 'not found' <<<"$(ldd "$f" 2>/dev/null)"; then
             echo "$f has unresolved libraries:"; ldd "$f" | grep 'not found'
             errors=$((errors + 1))
         fi

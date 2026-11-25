@@ -87,8 +87,8 @@ step "volume applet"
 for f in $KDEDIR/lib/kde3/volume_panelapplet.so $KDEDIR/share/apps/kicker/applets/volumeapplet.desktop; do
     [[ -f $f ]] || fail "$f missing"
 done
-ldd $KDEDIR/lib/kde3/volume_panelapplet.so | grep -q 'libpulse\.so' || fail "volume applet not linked to libpulse"
-nm -D --defined-only $KDEDIR/lib/kde3/volume_panelapplet.so | grep -q ' T init$' ||
+grep -q 'libpulse\.so' <<<"$(ldd $KDEDIR/lib/kde3/volume_panelapplet.so)" || fail "volume applet not linked to libpulse"
+exports $KDEDIR/lib/kde3/volume_panelapplet.so init ||
     fail "volume applet does not export init()"
 echo ok
 
@@ -96,8 +96,8 @@ step "network applet"
 for f in $KDEDIR/lib/kde3/network_panelapplet.so $KDEDIR/share/apps/kicker/applets/networkapplet.desktop; do
     [[ -f $f ]] || fail "$f missing"
 done
-ldd $KDEDIR/lib/kde3/network_panelapplet.so | grep -q 'libnm\.so' || fail "network applet not linked to libnm"
-nm -D --defined-only $KDEDIR/lib/kde3/network_panelapplet.so | grep -q ' T init$' ||
+grep -q 'libnm\.so' <<<"$(ldd $KDEDIR/lib/kde3/network_panelapplet.so)" || fail "network applet not linked to libnm"
+exports $KDEDIR/lib/kde3/network_panelapplet.so init ||
     fail "network applet does not export init()"
 echo ok
 
@@ -181,8 +181,7 @@ step "programs answer --help"
 for app in kwin konsole konqueror kcontrol kate kdialog kfind khelpcenter \
            ksmserver kreadconfig kwriteconfig kxkb kdesu \
            ksysguard kmenuedit klipper; do
-    out=$(timeout 20 "$app" --help 2>&1 </dev/null) || true
-    grep -qi '^usage:' <<<"$out" || { echo "$out"; fail "$app --help"; }
+    answers_help "$app"
     echo "$app: ok"
 done
 kdialog --title test --msgbox hello >/dev/null 2>&1 &

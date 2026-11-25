@@ -29,7 +29,7 @@ check_elf $KDEDIR $KDEDIR/lib /opt/kde3-qt/lib
 readelf -d $KDEDIR/bin/kded | grep -E 'NEEDED|RUNPATH'
 
 step "SVG icons (librsvg)"
-readelf -d $KDEDIR/lib/libkdecore.so.4 | grep -q 'NEEDED.*librsvg-2' || fail "libkdecore is built without librsvg"
+grep -q 'NEEDED.*librsvg-2' <<<"$(readelf -d $KDEDIR/lib/libkdecore.so.4)" || fail "libkdecore is built without librsvg"
 echo ok
 
 step "setuid helpers"
@@ -213,9 +213,7 @@ timeout 30 dcopserver_shutdown --wait || fail "dcopserver_shutdown"
 
 step "programs start"
 for app in kde-config meinproc kcmshell kconfig_compiler; do
-    # KCmdLineArgs exits with 254 after --help
-    out=$(timeout 20 "$app" --help 2>&1) || true
-    grep -qi '^usage:' <<<"$out" || { echo "$out"; fail "$app --help"; }
+    answers_help "$app"
     echo "$app: ok"
 done
 

@@ -14,14 +14,14 @@ echo "PATH=$PATH"
 
 step "ldd of designer"
 ldd "$QTDIR/bin/designer"
-! ldd "$QTDIR/bin/designer" | grep -q 'not found' || fail "designer has unresolved libraries"
+! grep -q 'not found' <<<"$(ldd "$QTDIR/bin/designer")" || fail "designer has unresolved libraries"
 
 step "all ELF files resolve and have no build-tree RUNPATH"
 n=0
 while IFS= read -r -d '' f; do
     head -c4 "$f" | grep -q $'\x7fELF' || continue
     n=$((n + 1))
-    if ldd "$f" 2>/dev/null | grep -q 'not found'; then
+    if grep -q 'not found' <<<"$(ldd "$f" 2>/dev/null)"; then
         ldd "$f" | grep 'not found'
         fail "$f has unresolved libraries"
     fi
@@ -50,13 +50,13 @@ pkg-config --cflags kde3-qt | grep -q -- -DQT_TABLET_SUPPORT || fail "built with
 
 step "optional X11 features are linked in"
 for lib in libXft libXrender libXrandr libXcursor libXinerama libXi libGL libSM; do
-    ldd "$QTDIR/lib/libkde3-qt.so.3" | grep -q "$lib\.so" || fail "libkde3-qt is not linked to $lib"
+    grep -q "$lib\.so" <<<"$(ldd "$QTDIR/lib/libkde3-qt.so.3")" || fail "libkde3-qt is not linked to $lib"
 done
 echo ok
 
 step "GLib event loop"
 grep -q '^# define QT_GLIB_EVENTLOOP$' "$QTDIR/include/qconfig.h" || fail "QT_GLIB_EVENTLOOP not in qconfig.h"
-ldd "$QTDIR/lib/libkde3-qt.so.3" | grep -q 'libglib-2\.0\.so' || fail "libkde3-qt is not linked to libglib-2.0"
+grep -q 'libglib-2\.0\.so' <<<"$(ldd "$QTDIR/lib/libkde3-qt.so.3")" || fail "libkde3-qt is not linked to libglib-2.0"
 echo ok
 
 work=$(mktemp -d)

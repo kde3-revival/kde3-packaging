@@ -14,7 +14,7 @@ cd "$work"
 
 step "all ELF files resolve, RUNPATH only into /opt/kde3 and /opt/kde3-qt"
 check_elf $KDEDIR $KDEDIR/lib /opt/kde3-qt/lib
-nm -D --defined-only $KDEDIR/lib/kde3/libkwpepart.so | grep -qw init_libkwpepart ||
+exports $KDEDIR/lib/kde3/libkwpepart.so init_libkwpepart ||
     fail "libkwpepart.so does not export init_libkwpepart"
 
 step "Xvfb"

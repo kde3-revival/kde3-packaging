@@ -46,7 +46,7 @@ while read -r desktop; do
     if [[ -z $found ]]; then
         echo "$desktop: X-KDE-Library=$lib: no $cands.so"
         errors=$((errors + 1))
-    elif ! nm -D --defined-only "$found" | grep -Eq " T ($sym)$"; then
+    elif ! exports "$found" "$sym"; then
         echo "$desktop: $found does not export $sym"
         errors=$((errors + 1))
     fi
@@ -62,9 +62,7 @@ mkdir -p "$KDEHOME" "$HOME/Pictures"
 
 step "programs answer --help"
 for app in kview ksnapshot kruler; do
-    # KCmdLineArgs exits with 254 after --help
-    out=$(timeout 20 "$app" --help 2>&1 </dev/null) || true
-    grep -qi '^usage:' <<<"$out" || { echo "$out"; fail "$app --help"; }
+    answers_help "$app"
     echo "$app: ok"
 done
 
