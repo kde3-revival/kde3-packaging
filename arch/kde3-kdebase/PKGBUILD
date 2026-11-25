@@ -25,19 +25,20 @@ license=('GPL-2.0-or-later AND LGPL-2.0-or-later AND GFDL-1.2-or-later')
 # manager lists, mounts and ejects the storage devices through it (GIO);
 # upower: libupower-glib, for the power applet of kicker.  libnm: the
 # network applet of kicker (NetworkManager).  KWin composites itself:
-# libglvnd (EGL, GLESv2), mesa (GBM), libdrm, libxcb (DRI3), libxshmfence
-# for the GLES 3 backend, libxpresent for tear-free frames, libxi
-# (XInput 2.3) for the overview's Super key and hot corner barrier and
-# for the touchpad settings (kded_touchpad).
+# libglvnd (EGL, GLESv2), mesa (GBM), libxcb (DRI3), libxshmfence
+# for the GLES 3 backend (libdrm: only its headers, so a makedepends),
+# libxpresent for tear-free frames, libxi (XInput 2.3) for the overview's
+# Super key and hot corner barrier and for the touchpad settings
+# (kded_touchpad).
 depends=(kde3-kdelibs kde3-qt avahi fontconfig freetype2 glib2
-         glibc glu libdrm libgcc libgl libglvnd libice libldap libnm libpulse
+         glibc glu libgcc libgl libglvnd libice libldap libnm libpulse
          libsasl libsm libstdc++ libusb-compat libx11 libxau libxcb
          libxcomposite libxcursor libxdamage libxdmcp libxext libxfixes libxft
          libxi libxinerama libxkbfile libxpresent libxrandr libxrender
          libxshmfence libxss libxtst lm_sensors mesa openexr openssl pam
          perl smbclient udisks2 upower zlib
          xorg-setxkbmap xorg-xauth xorg-xmessage xorg-xrdb)
-makedepends=(cmake ninja xorg-bdftopcf xorg-mkfontscale)
+makedepends=(cmake libdrm ninja xorg-bdftopcf xorg-mkfontscale)
 optdepends=('gdb: backtraces in the crash handler (DrKonqi)'
             'xorg-mkfontscale: fonts.dir for core X fonts installed with kfontinst'
             'networkmanager: the network applet of kicker'

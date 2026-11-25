@@ -61,8 +61,10 @@ Requires:       kde3-kweather%{?_isa} = %{version}-%{release}
 Requires:       kde3-kbluetooth%{?_isa} = %{version}-%{release}
 Obsoletes:      kde3-kdeutils < %{replaced}
 Provides:       kde3-kdeutils = %{version}-%{release}
+Provides:       kde3-kdeutils%{?_isa} = %{version}-%{release}
 Obsoletes:      kde3-kdegraphics < %{replaced}
 Provides:       kde3-kdegraphics = %{version}-%{release}
+Provides:       kde3-kdegraphics%{?_isa} = %{version}-%{release}
 
 %description
 The applications of the KDE 3.5 desktop maintained by the kde3-revival

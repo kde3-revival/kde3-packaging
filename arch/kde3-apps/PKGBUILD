@@ -97,6 +97,8 @@ package_kde3-apps() {
            "kde3-kruler=${pkgver}-${pkgrel}" "kde3-ksnapshot=${pkgver}-${pkgrel}"
            "kde3-kweather=${pkgver}-${pkgrel}" "kde3-kbluetooth=${pkgver}-${pkgrel}")
   replaces=("kde3-kdeutils<${_replaced}" "kde3-kdegraphics<${_replaced}")
+  # what still depends on the old packages is satisfied by this one
+  provides=("kde3-kdeutils=${pkgver}-${pkgrel}" "kde3-kdegraphics=${pkgver}-${pkgrel}")
   conflicts=("kde3-kdeutils<${_replaced}" "kde3-kdegraphics<${_replaced}")
   install -Dm644 -t "${pkgdir}/usr/share/doc/${pkgname}" kde3-apps-${_commit}/{README.md,AUTHORS}
   install -Dm644 -t "${pkgdir}/usr/share/licenses/${pkgname}" \
