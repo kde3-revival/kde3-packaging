@@ -16,6 +16,10 @@ step "all ELF files resolve, RUNPATH only into /opt/kde3 and /opt/kde3-qt"
 check_elf $KDEDIR $KDEDIR/lib /opt/kde3-qt/lib
 exports $KDEDIR/lib/kde3/libkwpepart.so init_libkwpepart ||
     fail "libkwpepart.so does not export init_libkwpepart"
+# the XML GUI of the part, and of its app mode (KWhatsApp)
+for f in kwpepart.rc kwpeapppart.rc; do
+    [[ -f $KDEDIR/share/apps/kwpepart/$f ]] || fail "share/apps/kwpepart/$f missing"
+done
 
 step "Xvfb"
 Xvfb :42 -nolisten tcp -screen 0 1024x768x24 >/dev/null 2>&1 &

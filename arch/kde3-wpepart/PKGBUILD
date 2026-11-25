@@ -13,8 +13,8 @@
 pkgname=kde3-wpepart
 # the GitHub repository; its tarballs unpack to kde3-webpart-<commit>
 _repo=kde3-webpart
-_commit=cb71e1281efd2ad5fd56ecf28f4e58ecb7b994ba
-_date=20261123
+_commit=d67f8404dda3f6e26b910dd956d0b8f29d552faf
+_date=20261124
 pkgver=0.1.0+git${_date}
 pkgrel=1
 pkgdesc='WPE WebKit browser part for Konqueror, maintained for kde3-revival'
@@ -22,12 +22,14 @@ arch=(x86_64)
 url='https://github.com/kde3-revival/kde3-webpart'
 license=('LGPL-2.1-or-later')
 # gumbo-parser: the HTML sanitizer of the mail mode (KMail's reader).
+# libsoup3: the part calls libsoup (WebKit's network library) directly:
+# response headers of its own pages, the base domains of the ad blocker.
 depends=(kde3-kdelibs kde3-qt wpewebkit glib2 glibc gumbo-parser libdrm libgcc
-         libstdc++ libx11 libxcb libxext libxfixes libxpresent libxrandr)
+         libsoup3 libstdc++ libx11 libxcb libxext libxfixes libxpresent libxrandr)
 makedepends=(cmake ninja)
 optdepends=('kde3-kdebase: Konqueror, the browser the part is made for')
 source=("kde3-wpepart-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz")
-sha256sums=('e7040ca081ff0fa94b53512cfea438bab24acef8f88c9fb71b9d7f110410dd57')
+sha256sums=('09839671b26561096e458ff7991fb80184c507e0c607b998d6f18c620216d1df')
 
 _prefix=/opt/kde3
 

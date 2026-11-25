@@ -32,6 +32,11 @@ step "SVG icons (librsvg)"
 grep -q 'NEEDED.*librsvg-2' <<<"$(readelf -d $KDEDIR/lib/libkdecore.so.4)" || fail "libkdecore is built without librsvg"
 echo ok
 
+step "KBalloon (kdeui)"
+[[ -f $KDEDIR/include/kballoon.h ]] || fail "kballoon.h missing"
+exports $KDEDIR/lib/libkdeui.so.4 '_ZN8KBalloonC[12].*' || fail "libkdeui does not export KBalloon"
+echo ok
+
 step "setuid helpers"
 for f in kgrantpty start_kdeinit kpac_dhcp_helper; do
     ls -l $KDEDIR/bin/$f

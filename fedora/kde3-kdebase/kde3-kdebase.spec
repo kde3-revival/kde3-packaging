@@ -8,15 +8,15 @@
 
 # the GitHub repository; its tarballs unpack to kde3-base-<commit>
 %global repo       kde3-base
-%global commit     33ef1001d78d3d8088fa38bcd378e7891420d186
+%global commit     33b54f7b675b06bee3df13eeebca2c2b822edeab
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global date       20261123
+%global date       20261124
 
 %global kde3dir    /opt/kde3
 
 Name:           kde3-kdebase
 Version:        3.5.10+git%{date}
-Release:        2%{?dist}
+Release:        1%{?dist}
 Summary:        KDE 3.5 desktop maintained for kde3-revival
 
 License:        GPL-2.0-or-later AND LGPL-2.0-or-later AND GFDL-1.2-or-later
@@ -297,7 +297,7 @@ sort -o devel.list devel.list
 
 %files -f main.list
 %license COPYING COPYING-DOCS
-%doc README AUTHORS README.pam
+%doc README.md AUTHORS README.pam
 %config(noreplace) %{_sysconfdir}/pam.d/kde3
 %config(noreplace) %{_sysconfdir}/fonts/conf.d/60-kde3-konsole-fonts.conf
 %{_datadir}/xsessions/kde3.desktop
@@ -314,6 +314,10 @@ sort -o devel.list devel.list
 %{_unitdir}/kde3-kdm.service
 
 %changelog
+* Wed Nov 25 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261124-1
+- Snapshot of kde3-revival/kde3-base commit 33b54f7
+- Repository renamed kde3-base; README is README.md
+
 * Mon Nov 23 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261123-2
 - Snapshot of kde3-revival/kde3-kdebase commit 33ef100
 - touchpad settings (kded_touchpad, XInput 2) checked

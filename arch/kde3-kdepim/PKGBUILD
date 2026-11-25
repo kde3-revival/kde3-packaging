@@ -11,10 +11,10 @@
 pkgname=kde3-kdepim
 # the GitHub repository; its tarballs unpack to kde3-pim-<commit>
 _repo=kde3-pim
-_commit=0bc073c17096bcc0ced77c96a2e7115c120ad2d8
-_date=20261123
+_commit=343793564621c7ac39ad977325f57f77aa43b096
+_date=20261125
 pkgver=3.5.10+git${_date}
-pkgrel=2
+pkgrel=1
 pkgdesc='KDE 3.5 PIM suite (KMail, KOrganizer, KAddressBook, Kontact, Kleopatra) maintained for kde3-revival'
 arch=(x86_64)
 url='https://github.com/kde3-revival/kde3-pim'
@@ -26,7 +26,8 @@ license=('GPL-2.0-or-later AND LGPL-2.0-or-later AND (LGPL-2.1-only OR MPL-1.0) 
 # OpenPGP support of KMail (libkpgp), directly.  perl runs ical2vcal and
 # kconf_update scripts (and generates libical's sources at build time).
 # glib2: KMail disconnects before the machine sleeps (logind, GIO).
-depends=(kde3-kdebase kde3-kdelibs kde3-qt glib2 glibc gnupg gpgme libgcc
+# KMail's new-mail balloon is a KBalloon (kdelibs since 2026-11-24).
+depends=(kde3-kdebase 'kde3-kdelibs>=3.5.10+git20261124' kde3-qt glib2 glibc gnupg gpgme libgcc
          libgpg-error libsasl libstdc++ libx11 perl zlib)
 makedepends=(cmake ninja)
 # kde3-wpepart: KMail's reader shows messages with WPE WebKit (its mail
@@ -35,7 +36,7 @@ optdepends=('kde3-wpepart>=0.1.0+git20261123: KMail reader with WPE WebKit (else
             'spamassassin: spam filtering (KMail anti-spam wizard)'
             'clamav: virus filtering (KMail anti-virus wizard)')
 source=("kde3-kdepim-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz")
-sha256sums=('da321f488a0fc772b2d2e228ea1601f219ebbd407b17facbbfb2084abb46ecdd')
+sha256sums=('e11472635b52819fd92d72631a6781e93228c095a41a4dacd52fc2e487e1bafc')
 
 _prefix=/opt/kde3
 

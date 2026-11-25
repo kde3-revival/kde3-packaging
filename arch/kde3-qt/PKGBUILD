@@ -7,10 +7,10 @@
 
 pkgbase=kde3-qt
 pkgname=(kde3-qt kde3-qt-designer kde3-qt-doc)
-_commit=00644b6122bada34da671f646c5825d9268d1301
-_date=20261121
+_commit=9b94d73a6317ddde4c58ffa1b7d270f2d5dbd77d
+_date=20261124
 pkgver=3.3.8b+git${_date}
-pkgrel=2
+pkgrel=1
 pkgdesc='Qt 3 toolkit maintained for kde3-revival'
 arch=(x86_64)
 url='https://github.com/kde3-revival/kde3-qt'
@@ -21,7 +21,7 @@ makedepends=(libcups fontconfig freetype2 glib2 glu libgl libice libjpeg-turbo
 source=("kde3-qt-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz"
         kde3-qt.sh
         kde3-qt.csh)
-sha256sums=('52175158f4a6586d0fafda9d8319ef5249e00a30e1797eb2155d3b7251d8cd0a'
+sha256sums=('7dad0ac23151240daef6073f279e7821f4915e76b7068ed8490adcef1cca5a92'
             'cb5a4e10ed247eed92d91df6135618370b230f684af7bad6dba44911660126cf'
             '9fb71a7f15ea58a1d63ccdfd6a25d5b938c1e65653e4bbd23ca8df1327dbab1d')
 
