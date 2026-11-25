@@ -31,11 +31,11 @@ ref=${2:-master}
 
 declare -A repo=(
     [kde3-qt]=kde3-revival/kde3-qt
-    [kde3-kdelibs]=kde3-revival/kde3-kdelibs
-    [kde3-kdebase]=kde3-revival/kde3-kdebase
-    [kde3-kdepim]=kde3-revival/kde3-kdepim
+    [kde3-kdelibs]=kde3-revival/kde3-libs
+    [kde3-kdebase]=kde3-revival/kde3-base
+    [kde3-kdepim]=kde3-revival/kde3-pim
     [kde3-apps]=kde3-revival/kde3-apps
-    [kde3-wpepart]=kde3-revival/kde3-wpepart
+    [kde3-wpepart]=kde3-revival/kde3-webpart
 )
 r=${repo[$pkg]:-}
 [[ -n $r ]] || { echo "unknown package $pkg" >&2; exit 1; }
@@ -74,7 +74,8 @@ tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 tarball=$pkg-$commit.tar.gz
 if [[ -n ${CLONE:-} ]]; then
-    git -C "$CLONE" archive --format=tar --prefix="$pkg-$commit/" "$commit" | gzip -n >"$tmp/$tarball"
+    # GitHub's tarballs unpack to <repository>-<commit>
+    git -C "$CLONE" archive --format=tar --prefix="${r#*/}-$commit/" "$commit" | gzip -n >"$tmp/$tarball"
     mkdir -p "$top/out/sources"
     cp "$tmp/$tarball" "$top/out/sources/"
 else

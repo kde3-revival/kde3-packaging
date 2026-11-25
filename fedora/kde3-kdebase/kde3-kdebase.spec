@@ -6,6 +6,8 @@
 # kde3-qt and kde3-kdelibs are not in a repository: build them first
 # (../../build.sh does that with the packages in out/).
 
+# the GitHub repository; its tarballs unpack to kde3-base-<commit>
+%global repo       kde3-base
 %global commit     33ef1001d78d3d8088fa38bcd378e7891420d186
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 %global date       20261123
@@ -18,7 +20,7 @@ Release:        2%{?dist}
 Summary:        KDE 3.5 desktop maintained for kde3-revival
 
 License:        GPL-2.0-or-later AND LGPL-2.0-or-later AND GFDL-1.2-or-later
-URL:            https://github.com/kde3-revival/kde3-kdebase
+URL:            https://github.com/kde3-revival/%{repo}
 Source0:        %{url}/archive/%{commit}.tar.gz#/%{name}-%{commit}.tar.gz
 Source1:        kde3.pam
 Source2:        kde3-np.pam
@@ -150,7 +152,7 @@ manager.  It uses the PAM services kde3 and kde3-np.
 
 
 %prep
-%autosetup -p1 -n %{name}-%{commit}
+%autosetup -p1 -n %{repo}-%{commit}
 
 %build
 # The prefix, the library directory (/opt/kde3/lib) and the RUNPATH come

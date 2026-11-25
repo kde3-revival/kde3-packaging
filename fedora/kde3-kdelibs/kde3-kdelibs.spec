@@ -6,6 +6,8 @@
 # kde3-qt is not in a repository: build it first (../../build.sh does that
 # with the packages in out/).
 
+# the GitHub repository; its tarballs unpack to kde3-libs-<commit>
+%global repo       kde3-libs
 %global commit     612905677e0c6b8d3ef41f7d81b34af530e010f5
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 %global date       20261123
@@ -19,7 +21,7 @@ Release:        1%{?dist}
 Summary:        KDE 3.5 core libraries maintained for kde3-revival
 
 License:        LGPL-2.0-or-later AND GPL-2.0-or-later AND BSD-2-Clause AND GFDL-1.2-or-later
-URL:            https://github.com/kde3-revival/kde3-kdelibs
+URL:            https://github.com/kde3-revival/%{repo}
 Source0:        %{url}/archive/%{commit}.tar.gz#/%{name}-%{commit}.tar.gz
 Source1:        kde3.sh
 Source2:        kde3.csh
@@ -118,7 +120,7 @@ makekdewidgets.
 
 
 %prep
-%autosetup -n %{name}-%{commit}
+%autosetup -n %{repo}-%{commit}
 
 %build
 # CMAKE_BUILD_TYPE=None: the distribution flags only (the KDE build types

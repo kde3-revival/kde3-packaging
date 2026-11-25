@@ -9,13 +9,15 @@
 # with the packages in out/).
 
 pkgname=kde3-kdelibs
+# the GitHub repository; its tarballs unpack to kde3-libs-<commit>
+_repo=kde3-libs
 _commit=612905677e0c6b8d3ef41f7d81b34af530e010f5
 _date=20261123
 pkgver=3.5.10+git${_date}
 pkgrel=1
 pkgdesc='KDE 3.5 core libraries maintained for kde3-revival'
 arch=(x86_64)
-url='https://github.com/kde3-revival/kde3-kdelibs'
+url='https://github.com/kde3-revival/kde3-libs'
 license=('LGPL-2.0-or-later AND GPL-2.0-or-later AND BSD-2-Clause AND GFDL-1.2-or-later')
 # iceauth is run by
 # dcopserver; perl runs dcopidlng (kde3_use_dcopidlng() of other modules),
@@ -52,7 +54,7 @@ build() {
   # /opt/kde3/etc (kderc, xdg/menus), so nothing clashes with the /etc/xdg
   # of KDE Plasma.  The PPD for CUPS is installed below, independent of
   # whether the build container has /usr/share/cups/model.
-  cmake -S kde3-kdelibs-${_commit} -B build -G Ninja \
+  cmake -S ${_repo}-${_commit} -B build -G Ninja \
     -DCMAKE_BUILD_TYPE=None \
     -DCMAKE_INSTALL_PREFIX=${_prefix} \
     -DCMAKE_INSTALL_LIBDIR=lib \
@@ -76,7 +78,7 @@ build() {
 package() {
   DESTDIR="${pkgdir}" cmake --install build
 
-  local src=kde3-kdelibs-${_commit}
+  local src=${_repo}-${_commit}
 
   # The setuid root helpers ("install-exec-hook"s that set the mode when
   # the installation may chown, as under fakeroot): kgrantpty (pty

@@ -42,8 +42,24 @@ This updates the commit, date, checksums and pkgrel/Release (back to 1, or
 +1 when the new commit has the same date) in both recipes and adds a Fedora
 changelog entry; review with `git diff` and commit.
 
-A repository that cannot be downloaded (kde3-kdepim, for example, is
-private for now) is taken from a local clone:
+The packages keep their names; four of the repositories have been
+renamed (GitHub redirects the old URLs):
+
+| package      | repository (github.com/kde3-revival/...) |
+|--------------|------------------------------------------|
+| kde3-qt      | kde3-qt      |
+| kde3-kdelibs | kde3-libs    |
+| kde3-kdebase | kde3-base    |
+| kde3-kdepim  | kde3-pim     |
+| kde3-apps    | kde3-apps    |
+| kde3-wpepart | kde3-webpart |
+
+GitHub's tarball of a commit unpacks to `<repository>-<commit>`; the
+recipes have the repository name in `_repo` (Arch) and `%{repo}`
+(Fedora).
+
+A repository that cannot be downloaded (a private one) is taken from a
+local clone:
 
     CLONE=../kde3-kdepim ./bump.sh kde3-kdepim
 
@@ -236,8 +252,7 @@ one compile job per 3 GB of RAM, and no debuginfo packages
     ./build.sh fedora kde3-wpepart && ./build.sh test fedora kde3-wpepart
 
 On Arch, `./build.sh arch kde3-wpepart` takes wpewebkit from the
-repository.  kde3-wpepart's repository is not public yet: its tarball is
-made from a local clone (`CLONE=../kde3-wpepart ./bump.sh kde3-wpepart`).
+repository.
 The test shows a local page with kwpeview under Xvfb (shared memory path)
 and checks the title and the colours; WebKit's sandbox is switched off
 there when the container has no user namespaces for bubblewrap.

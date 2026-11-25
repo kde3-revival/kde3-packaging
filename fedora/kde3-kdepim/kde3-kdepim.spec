@@ -6,6 +6,8 @@
 # kde3-qt, kde3-kdelibs and kde3-kdebase are not in a repository: build
 # them first (../../build.sh does that with the packages in out/).
 
+# the GitHub repository; its tarballs unpack to kde3-pim-<commit>
+%global repo       kde3-pim
 %global commit     0bc073c17096bcc0ced77c96a2e7115c120ad2d8
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 %global date       20261123
@@ -18,7 +20,7 @@ Release:        2%{?dist}
 Summary:        KDE 3.5 PIM suite (KMail, KOrganizer, Kontact) maintained for kde3-revival
 
 License:        GPL-2.0-or-later AND LGPL-2.0-or-later AND (LGPL-2.1-only OR MPL-1.0) AND GFDL-1.2-or-later
-URL:            https://github.com/kde3-revival/kde3-kdepim
+URL:            https://github.com/kde3-revival/%{repo}
 Source0:        %{url}/archive/%{commit}.tar.gz#/%{name}-%{commit}.tar.gz
 
 BuildRequires:  cmake
@@ -80,7 +82,7 @@ programs against them.
 
 
 %prep
-%autosetup -n %{name}-%{commit}
+%autosetup -n %{repo}-%{commit}
 
 %build
 # The prefix, the library directory (/opt/kde3/lib) and the RUNPATH come

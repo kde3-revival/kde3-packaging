@@ -12,6 +12,8 @@
 # repository, nor is wpewebkit in Fedora: build them first (../../build.sh
 # does that with the packages in out/).
 
+# the GitHub repository; its tarballs unpack to kde3-webpart-<commit>
+%global repo       kde3-webpart
 %global commit     cb71e1281efd2ad5fd56ecf28f4e58ecb7b994ba
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 %global date       20261123
@@ -24,7 +26,7 @@ Release:        1%{?dist}
 Summary:        WPE WebKit browser part for Konqueror (kde3-revival)
 
 License:        LGPL-2.1-or-later
-URL:            https://github.com/kde3-revival/kde3-wpepart
+URL:            https://github.com/kde3-revival/%{repo}
 Source0:        %{url}/archive/%{commit}.tar.gz#/%{name}-%{commit}.tar.gz
 
 BuildRequires:  cmake
@@ -62,7 +64,7 @@ of its own.  Installed in %{kde3dir}.
 
 
 %prep
-%autosetup -n %{name}-%{commit}
+%autosetup -n %{repo}-%{commit}
 
 %build
 # The prefix, the library directory (/opt/kde3/lib) and the RUNPATH come
