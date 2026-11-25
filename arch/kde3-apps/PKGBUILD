@@ -18,21 +18,28 @@
 pkgbase=kde3-apps
 pkgname=(kde3-apps kde3-ark kde3-kcalc kde3-kcharselect kde3-kdf kde3-khexedit
          kde3-ktimer kde3-kwalletmanager kde3-kview kde3-kruler kde3-ksnapshot
-         kde3-kweather kde3-kbluetooth)
-_commit=75557fb855cddbfed4962ec7b4b9d796b7191316
-_date=20261123
+         kde3-kweather kde3-kbluetooth kde3-kpdf kde3-kwhatsapp)
+_commit=aee89c0e32172b3871e7fda6ce887bf1c461c63c
+_date=20261124
 pkgver=3.5.10+git${_date}
-pkgrel=2
-pkgdesc='KDE 3.5 applications (Ark, KCalc, KView, KSnapshot, KWeather, ...) maintained for kde3-revival'
+pkgrel=1
+# KBalloon is in kdelibs, KWPEPart's app mode in kde3-wpepart, since
+# these snapshots (KWhatsApp)
+_kdelibs_balloon=3.5.10+git20261124
+_wpepart_appmode=0.1.0+git20261124
+pkgdesc='KDE 3.5 applications (Ark, KCalc, KView, KPDF, KSnapshot, KWeather, ...) maintained for kde3-revival'
 arch=(x86_64)
 url='https://github.com/kde3-revival/kde3-apps'
 license=('GPL-2.0-or-later AND GPL-2.0-only AND LGPL-2.0-only AND LGPL-2.0-or-later AND GFDL-1.1-or-later')
-# tar, gzip and bluez: split packages need their dependencies at build
-# time (namcap); glib2:
-# kbluetooth talks to BlueZ with GIO's GDBus.
-makedepends=(bluez cmake ninja kde3-kdelibs kde3-qt glib2 gmp gzip libx11 libxext tar)
+# tar, gzip, bluez and kde3-wpepart: split packages need their
+# dependencies at build time (namcap); glib2: kbluetooth talks to BlueZ
+# with GIO's GDBus; poppler-glib and cairo: KPDF.  KWhatsApp needs KBalloon
+# (kdelibs) and the app mode of kde3-wpepart's part (loaded at run time).
+makedepends=(bluez cairo cmake ninja "kde3-kdelibs>=${_kdelibs_balloon}" kde3-qt
+             "kde3-wpepart>=${_wpepart_appmode}" glib2 gmp gzip libx11 libxext
+             poppler-glib tar)
 source=("kde3-apps-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz")
-sha256sums=('2344bf001f9f85378e327b4ddaece7a73d6a1cecb910349e4fd52ee43dfa2519')
+sha256sums=('c7cd846331ad71b1ca17205b39d1abb593ef67bf40a35d5f4cf4bd9b3ca78306')
 
 _prefix=/opt/kde3
 # kde3-kdeutils and kde3-kdegraphics older than that are replaced
@@ -60,7 +67,9 @@ build() {
     -DKDE3_APPS_KSNAPSHOT=ON \
     -DKDE3_APPS_KSNAPSHOT_XSHAPE=ON \
     -DKDE3_APPS_KWEATHER=ON \
-    -DKDE3_APPS_KBLUETOOTH=ON
+    -DKDE3_APPS_KBLUETOOTH=ON \
+    -DKDE3_APPS_KPDF=ON \
+    -DKDE3_APPS_KWHATSAPP=ON
   grep -qx "CMAKE_INSTALL_PREFIX:PATH=${_prefix}" build/CMakeCache.txt ||
     { error "configure: install prefix is not ${_prefix}"; return 1; }
   local have
@@ -72,30 +81,35 @@ build() {
 
 # _install <directory> [<more directories>]: what the install scripts of
 # an application's build directory and of its handbook (doc/<directory>)
-# install, checked for the given files.  libkhexeditcommon (the khexedit2
+# install, checked for the given files (kwhatsapp has no handbook).  libkhexeditcommon (the khexedit2
 # part) and libkimageviewer (KView's parts) install no headers: their
 # unversioned links are of no use.
 _install() {
   local d f root=${pkgdir}${_prefix}
-  for d in "$1" "doc/$1" "${@:2}"; do
+  local docs=("doc/$1")
+  [[ $1 == kwhatsapp ]] && docs=()
+  for d in "$1" "${docs[@]}" "${@:2}"; do
     DESTDIR="${pkgdir}" cmake --install build/$d >/dev/null
   done
   for f in "${_files[@]}"; do
     [[ -e ${root}/$f ]] || { error "not built: $f"; return 1; }
   done
   rm -f "${root}"/lib/{libkhexeditcommon,libkimageviewer}.so
-  install -Dm644 -t "${pkgdir}/usr/share/licenses/${pkgname}" \
-    kde3-apps-${_commit}/{COPYING,COPYING-DOCS}
+  install -Dm644 -t "${pkgdir}/usr/share/licenses/${pkgname}" kde3-apps-${_commit}/COPYING
+  # the licence of the handbook
+  [[ ${#docs[@]} == 0 ]] ||
+    install -Dm644 -t "${pkgdir}/usr/share/licenses/${pkgname}" kde3-apps-${_commit}/COPYING-DOCS
 }
 
 package_kde3-apps() {
-  pkgdesc='KDE 3.5 applications of kde3-revival (all of them: Ark, KCalc, KCharSelect, KDiskFree, KHexEdit, KTimer, KWalletManager, KView, KRuler, KSnapshot, KWeather, kbluetooth)'
+  pkgdesc='KDE 3.5 applications of kde3-revival (all of them: Ark, KCalc, KCharSelect, KDiskFree, KHexEdit, KTimer, KWalletManager, KView, KPDF, KRuler, KSnapshot, KWeather, kbluetooth, KWhatsApp)'
   depends=("kde3-ark=${pkgver}-${pkgrel}" "kde3-kcalc=${pkgver}-${pkgrel}"
            "kde3-kcharselect=${pkgver}-${pkgrel}" "kde3-kdf=${pkgver}-${pkgrel}"
            "kde3-khexedit=${pkgver}-${pkgrel}" "kde3-ktimer=${pkgver}-${pkgrel}"
            "kde3-kwalletmanager=${pkgver}-${pkgrel}" "kde3-kview=${pkgver}-${pkgrel}"
            "kde3-kruler=${pkgver}-${pkgrel}" "kde3-ksnapshot=${pkgver}-${pkgrel}"
-           "kde3-kweather=${pkgver}-${pkgrel}" "kde3-kbluetooth=${pkgver}-${pkgrel}")
+           "kde3-kweather=${pkgver}-${pkgrel}" "kde3-kbluetooth=${pkgver}-${pkgrel}"
+           "kde3-kpdf=${pkgver}-${pkgrel}" "kde3-kwhatsapp=${pkgver}-${pkgrel}")
   replaces=("kde3-kdeutils<${_replaced}" "kde3-kdegraphics<${_replaced}")
   # what still depends on the old packages is satisfied by this one
   provides=("kde3-kdeutils=${pkgver}-${pkgrel}" "kde3-kdegraphics=${pkgver}-${pkgrel}")
@@ -229,4 +243,28 @@ package_kde3-kbluetooth() {
   depends=("${_kdedeps[@]}" bluez glib2)
   local _files=(bin/kbluetooth share/autostart/kbluetooth.desktop)
   _install kbluetooth
+}
+
+package_kde3-kpdf() {
+  pkgdesc='PDF viewer for KDE 3.5, on poppler-glib, with its KPart (kde3-revival)'
+  license=('GPL-2.0-or-later AND GFDL-1.1-or-later')
+  depends=("${_kdedeps[@]}" cairo glib2 poppler-glib)
+  local _files=(bin/kpdf lib/kde3/libkpdfpart.so share/config.kcfg/kpdf.kcfg)
+  _install kpdf
+}
+
+# KWhatsApp's icon is WhatsApp's glyph (a trademark of WhatsApp);
+# KWhatsApp is not made or endorsed by WhatsApp (kwhatsapp/ICONS).
+package_kde3-kwhatsapp() {
+  pkgdesc='WhatsApp Web as a KDE 3.5 application, in WPE WebKit (kde3-revival; not made or endorsed by WhatsApp)'
+  license=('GPL-2.0-or-later')
+  depends=("kde3-kdelibs>=${_kdelibs_balloon}" kde3-qt glibc libgcc libstdc++ libx11
+           "kde3-wpepart>=${_wpepart_appmode}")
+  # the tray icon (unread count) is shown in kicker's system tray
+  optdepends=('kde3-kdebase: the system tray (kicker) for the tray icon')
+  local _files=(bin/kwhatsapp share/applications/kde/kwhatsapp.desktop
+                share/apps/kwhatsapp/kwhatsappui.rc share/apps/kwhatsapp/eventsrc
+                share/icons/hicolor/scalable/apps/kwhatsapp.svgz)
+  _install kwhatsapp
+  install -Dm644 -t "${pkgdir}/usr/share/licenses/${pkgname}" kde3-apps-${_commit}/kwhatsapp/ICONS
 }

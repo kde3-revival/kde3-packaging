@@ -10,7 +10,7 @@ set -euo pipefail
 
 apps="kde3-ark kde3-kcalc kde3-kcharselect kde3-kdf kde3-khexedit kde3-ktimer
       kde3-kwalletmanager kde3-kview kde3-kruler kde3-ksnapshot kde3-kweather
-      kde3-kbluetooth"
+      kde3-kbluetooth kde3-kpdf kde3-kwhatsapp"
 
 step "one package per application, kde3-apps replaces kde3-kdeutils and kde3-kdegraphics"
 if command -v pacman >/dev/null; then
@@ -60,6 +60,16 @@ kde3-kweather lib/kde3/weather_panelapplet.so
 kde3-kweather share/apps/kicker/applets/kweather.desktop
 kde3-kbluetooth bin/kbluetooth
 kde3-kbluetooth share/autostart/kbluetooth.desktop
+kde3-kpdf bin/kpdf
+kde3-kpdf lib/kde3/libkpdfpart.so
+kde3-kpdf share/config.kcfg/kpdf.kcfg
+kde3-kpdf share/doc/HTML/en/kpdf/index.docbook
+kde3-kwhatsapp bin/kwhatsapp
+kde3-kwhatsapp share/applications/kde/kwhatsapp.desktop
+kde3-kwhatsapp share/apps/kwhatsapp/eventsrc
+kde3-kwhatsapp share/apps/kwhatsapp/kwhatsappui.rc
+kde3-kwhatsapp share/icons/hicolor/48x48/apps/kwhatsapp.png
+kde3-kwhatsapp share/icons/hicolor/scalable/apps/kwhatsapp.svgz
 LIST
 echo ok
 
@@ -69,6 +79,25 @@ exports /opt/kde3/lib/kde3/weather_panelapplet.so init ||
     fail "weather_panelapplet does not export init()"
 for p in kweatherservice kbluetooth; do answers_help $p; done
 grep -q 'libgio-2\.0\.so' <<<"$(ldd /opt/kde3/bin/kbluetooth)" || fail "kbluetooth not linked to GIO"
+echo ok
+
+step "kpdf and kwhatsapp"
+exports /opt/kde3/lib/kde3/libkpdfpart.so init_libkpdfpart || fail "libkpdfpart does not export init_libkpdfpart"
+grep -q 'libpoppler-glib\.so' <<<"$(ldd /opt/kde3/lib/kde3/libkpdfpart.so)" || fail "libkpdfpart not linked to poppler-glib"
+for p in kpdf kwhatsapp; do answers_help $p; done
+# KWhatsApp's part (KWPEPart in app mode) and KBalloon
+[[ -f /opt/kde3/share/apps/kwpepart/kwpeapppart.rc ]] || fail "kde3-wpepart without the app mode"
+grep -q 'KBalloon' <<<"$(nm -D --undefined-only /opt/kde3/bin/kwhatsapp | c++filt)" ||
+    fail "kwhatsapp does not use KBalloon"
+if command -v pacman >/dev/null; then
+    deps=$(pacman -Qi kde3-kwhatsapp | sed -n 's/^Depends On *: //p')
+    [[ " $deps " == *" kde3-wpepart>=0.1.0+git20261124 "* ]] || fail "kde3-kwhatsapp: $deps"
+    [[ " $deps " == *" kde3-kdelibs>=3.5.10+git20261124 "* ]] || fail "kde3-kwhatsapp: $deps"
+else
+    requires=$(rpm -q --requires kde3-kwhatsapp)
+    grep -q '^kde3-wpepart(x86-64) >= 0.1.0+git20261124' <<<"$requires" || { echo "$requires"; fail "kde3-kwhatsapp: kde3-wpepart"; }
+    grep -q '^kde3-kdelibs(x86-64) >= 3.5.10+git20261124' <<<"$requires" || { echo "$requires"; fail "kde3-kwhatsapp: kde3-kdelibs"; }
+fi
 echo ok
 
 bash "$(dirname "$0")/kde3-apps-utils.sh"

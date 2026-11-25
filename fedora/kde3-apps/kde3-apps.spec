@@ -13,9 +13,9 @@
 # upgrade installs every application they had; each application's
 # package conflicts with the old package that held its files.
 
-%global commit     75557fb855cddbfed4962ec7b4b9d796b7191316
+%global commit     aee89c0e32172b3871e7fda6ce887bf1c461c63c
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global date       20261123
+%global date       20261124
 
 %global kde3dir    /opt/kde3
 # The first version of kde3-apps; kde3-kdeutils and kde3-kdegraphics older
@@ -24,13 +24,18 @@
 
 # <application directory>:<package>; the handbook in doc/<directory> goes
 # with it (and doc/kinfocenter, the handbook of KDiskFree's module, with
-# kdf).
-%global apps ark:kde3-ark kcalc:kde3-kcalc kcharselect:kde3-kcharselect kdf:kde3-kdf khexedit:kde3-khexedit ktimer:kde3-ktimer kwallet:kde3-kwalletmanager kview:kde3-kview kruler:kde3-kruler ksnapshot:kde3-ksnapshot kweather:kde3-kweather kbluetooth:kde3-kbluetooth
+# kdf; kwhatsapp has no handbook).
+%global apps ark:kde3-ark kcalc:kde3-kcalc kcharselect:kde3-kcharselect kdf:kde3-kdf khexedit:kde3-khexedit ktimer:kde3-ktimer kwallet:kde3-kwalletmanager kview:kde3-kview kruler:kde3-kruler ksnapshot:kde3-ksnapshot kweather:kde3-kweather kbluetooth:kde3-kbluetooth kpdf:kde3-kpdf kwhatsapp:kde3-kwhatsapp
+
+# KWhatsApp needs KBalloon (kdelibs) and the app mode of kde3-wpepart's
+# part, both since these snapshots.
+%global kdelibs_balloon 3.5.10+git20261124
+%global wpepart_appmode 0.1.0+git20261124
 
 Name:           kde3-apps
 Version:        3.5.10+git%{date}
-Release:        2%{?dist}
-Summary:        KDE 3.5 applications (Ark, KCalc, KView, KSnapshot, KWeather, ...) for kde3-revival
+Release:        1%{?dist}
+Summary:        KDE 3.5 applications (Ark, KCalc, KView, KPDF, KSnapshot, KWeather, ...) for kde3-revival
 
 License:        GPL-2.0-or-later AND GPL-2.0-only AND LGPL-2.0-only AND LGPL-2.0-or-later AND GFDL-1.1-or-later
 URL:            https://github.com/kde3-revival/kde3-apps
@@ -39,13 +44,17 @@ Source0:        %{url}/archive/%{commit}.tar.gz#/%{name}-%{commit}.tar.gz
 BuildRequires:  cmake
 BuildRequires:  ninja-build
 BuildRequires:  gcc-c++
-BuildRequires:  kde3-kdelibs-devel
+BuildRequires:  kde3-kdelibs-devel >= %{kdelibs_balloon}
 # KCalc's arbitrary precision numbers
 BuildRequires:  gmp-devel
 # The Shape extension: KSnapshot cuts shaped windows to their shape.
 BuildRequires:  libXext-devel
 # kbluetooth talks to BlueZ over the system D-Bus with GIO's GDBus.
 BuildRequires:  glib2-devel
+# KPDF renders with poppler-glib (cairo; PostScript for printing)
+BuildRequires:  pkgconfig(poppler-glib) >= 20.09
+BuildRequires:  pkgconfig(cairo)
+BuildRequires:  pkgconfig(cairo-ps)
 
 Requires:       kde3-ark%{?_isa} = %{version}-%{release}
 Requires:       kde3-kcalc%{?_isa} = %{version}-%{release}
@@ -59,6 +68,8 @@ Requires:       kde3-kruler%{?_isa} = %{version}-%{release}
 Requires:       kde3-ksnapshot%{?_isa} = %{version}-%{release}
 Requires:       kde3-kweather%{?_isa} = %{version}-%{release}
 Requires:       kde3-kbluetooth%{?_isa} = %{version}-%{release}
+Requires:       kde3-kpdf%{?_isa} = %{version}-%{release}
+Requires:       kde3-kwhatsapp%{?_isa} = %{version}-%{release}
 Obsoletes:      kde3-kdeutils < %{replaced}
 Provides:       kde3-kdeutils = %{version}-%{release}
 Provides:       kde3-kdeutils%{?_isa} = %{version}-%{release}
@@ -70,8 +81,9 @@ Provides:       kde3-kdegraphics%{?_isa} = %{version}-%{release}
 The applications of the KDE 3.5 desktop maintained by the kde3-revival
 project that are not part of kdelibs, kdebase or kdepim, from kdeutils
 and kdegraphics 3.5.10 (Ark, KCalc, KCharSelect, KDiskFree, KHexEdit,
-KTimer, KWalletManager, KView, KRuler and KSnapshot), the weather applet
-KWeather of kdetoys and the new Bluetooth applet kbluetooth.  This package
+KTimer, KWalletManager, KView, KPDF, KRuler and KSnapshot), the weather
+applet KWeather of kdetoys, the new Bluetooth applet kbluetooth and
+KWhatsApp (WhatsApp Web as a KDE application).  This package
 installs all of them; each is a package of its own.  They are installed
 in %{kde3dir} and do not conflict with the applications of KDE Gear.
 
@@ -232,6 +244,36 @@ kbluetooth of the kde3-revival project: the Bluetooth applet of the
 system tray (BlueZ 5): switch the adapter, pair, connect and disconnect
 devices.  Started with the session.  Installed in %{kde3dir}.
 
+%package -n kde3-kpdf
+Summary:        PDF viewer for KDE 3.5 (kde3-revival)
+License:        GPL-2.0-or-later AND GFDL-1.1-or-later
+Requires:       kde3-kdelibs%{?_isa}
+
+%description -n kde3-kpdf
+KPDF, the PDF viewer of KDE 3.5 as maintained by the kde3-revival
+project, on poppler-glib instead of the xpdf code it carried, also as a
+KPart for Konqueror.  Installed in %{kde3dir}.
+
+%package -n kde3-kwhatsapp
+Summary:        WhatsApp Web as a KDE 3.5 application (kde3-revival)
+License:        GPL-2.0-or-later
+# KBalloon (the notification balloon at the tray icon)
+Requires:       kde3-kdelibs%{?_isa} >= %{kdelibs_balloon}
+# the web client runs in KWPEPart's app mode (loaded at run time)
+Requires:       kde3-wpepart%{?_isa} >= %{wpepart_appmode}
+# the tray icon (unread count) is shown in kicker's system tray
+Recommends:     kde3-kdebase%{?_isa}
+
+%description -n kde3-kwhatsapp
+KWhatsApp of the kde3-revival project: WhatsApp Web, WhatsApp's own web
+client, as a KDE application with its own window and login, a tray icon
+with the unread count and notifications through KNotify, shown as a
+balloon at the tray icon with the sender's picture.  The page runs in WPE
+WebKit through kde3-wpepart's part (app mode).  Installed in %{kde3dir}.
+
+Its icon is WhatsApp's glyph, a trademark of WhatsApp, traced to SVG.
+KWhatsApp is not made or endorsed by WhatsApp.
+
 
 %prep
 %autosetup -n %{name}-%{commit}
@@ -258,7 +300,9 @@ devices.  Started with the session.  Installed in %{kde3dir}.
     -DKDE3_APPS_KSNAPSHOT=ON \
     -DKDE3_APPS_KSNAPSHOT_XSHAPE=ON \
     -DKDE3_APPS_KWEATHER=ON \
-    -DKDE3_APPS_KBLUETOOTH=ON
+    -DKDE3_APPS_KBLUETOOTH=ON \
+    -DKDE3_APPS_KPDF=ON \
+    -DKDE3_APPS_KWHATSAPP=ON
 for have in HAVE_GMP HAVE_LONG_DOUBLE HAVE_L_FUNCS HAVE_X11_EXTENSIONS_SHAPE_H; do
     grep -q "^#define $have 1" %{__cmake_builddir}/config.h || { echo "configure: $have not set" >&2; exit 1; }
 done
@@ -278,7 +322,11 @@ for f in bin/ark bin/kcalc bin/kcharselect bin/kdf bin/kwikdisk bin/khexedit \
          lib/kde3/libarkpart.so lib/kde3/libkhexedit2part.so lib/kde3/kcm_kdf.so \
          lib/kde3/kcm_kwallet.so lib/kde3/libkviewviewer.so lib/kde3/libkviewcanvas.so \
          bin/kweatherservice lib/kde3/weather_panelapplet.so lib/kde3/kcm_weather.so \
-         bin/kbluetooth share/autostart/kbluetooth.desktop; do
+         bin/kbluetooth share/autostart/kbluetooth.desktop \
+         bin/kpdf lib/kde3/libkpdfpart.so share/config.kcfg/kpdf.kcfg \
+         bin/kwhatsapp share/applications/kde/kwhatsapp.desktop \
+         share/apps/kwhatsapp/kwhatsappui.rc share/apps/kwhatsapp/eventsrc \
+         share/icons/hicolor/scalable/apps/kwhatsapp.svgz; do
     [ -e $root/$f ] || { echo "not built: $f" >&2; exit 1; }
 done
 
@@ -296,6 +344,7 @@ rm -rf apps && mkdir apps
 for a in %{apps}; do
     dir=${a%%:*} pkg=${a#*:}
     dirs="$dir doc/$dir"
+    [ $dir = kwhatsapp ] && dirs=$dir
     [ $dir = kdf ] && dirs="$dirs doc/kinfocenter"
     for d in $dirs; do
         DESTDIR=$PWD/apps/$pkg cmake --install %{__cmake_builddir}/$d >/dev/null
@@ -357,7 +406,21 @@ cmp -s all.list split.list || { echo "file lists differ from the installation:" 
 %files -n kde3-kbluetooth -f kde3-kbluetooth.list
 %license COPYING COPYING-DOCS
 
+%files -n kde3-kpdf -f kde3-kpdf.list
+%license COPYING COPYING-DOCS
+
+%files -n kde3-kwhatsapp -f kde3-kwhatsapp.list
+%license COPYING kwhatsapp/ICONS
+
 %changelog
+* Wed Nov 25 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261124-1
+- Snapshot of kde3-revival/kde3-apps commit aee89c0
+- New sub-packages kde3-kpdf (PDF viewer on poppler-glib; BuildRequires
+  poppler-glib and cairo) and kde3-kwhatsapp (WhatsApp Web in kde3-wpepart's
+  app mode; requires kde3-wpepart >= 0.1.0+git20261124 and kde3-kdelibs
+  >= 3.5.10+git20261124 for KBalloon)
+- Provides the arch-qualified names of kde3-kdeutils and kde3-kdegraphics
+
 * Mon Nov 23 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261123-2
 - Snapshot of kde3-revival/kde3-apps commit 75557fb
 - New sub-packages kde3-kweather (panel applet, Open-Meteo) and

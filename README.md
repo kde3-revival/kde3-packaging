@@ -17,11 +17,12 @@ Distribution packages for the kde3-revival projects.
     ./build.sh test fedora kde3-qt    # container and run tests/kde3-qt.sh
 
 The packages are built in dependency order: kde3-qt, kde3-kdelibs,
-kde3-kdebase, kde3-kdepim, kde3-apps.  A package's kde3-revival dependencies are not taken from a
-repository but installed into the container from `out/<distro>/`, so
-build those first:
+kde3-kdebase, kde3-kdepim, kde3-wpepart (on Fedora after wpewebkit),
+kde3-apps (KWhatsApp needs kde3-wpepart).  A package's kde3-revival
+dependencies are not taken from a repository but installed into the
+container from `out/<distro>/`, so build those first:
 
-    for p in kde3-qt kde3-kdelibs kde3-kdebase kde3-kdepim kde3-apps; do
+    for p in kde3-qt kde3-kdelibs kde3-kdebase kde3-kdepim kde3-wpepart kde3-apps; do
         ./build.sh arch $p && ./build.sh test arch $p
     done
 
@@ -162,8 +163,10 @@ bit of scripts).
 | kde3-ksnapshot     | kde3-ksnapshot      | KSnapshot |
 | kde3-kweather      | kde3-kweather       | KWeather: panel applet, kcm_weather, kweatherservice (Open-Meteo) |
 | kde3-kbluetooth    | kde3-kbluetooth     | kbluetooth: Bluetooth applet of the system tray (BlueZ 5, autostarted) |
+| kde3-kpdf          | kde3-kpdf           | KPDF (+ part), on poppler-glib |
+| kde3-kwhatsapp     | kde3-kwhatsapp      | KWhatsApp: WhatsApp Web in kde3-wpepart's part (app mode), tray icon, notification balloons |
 
-Each application's package has its handbook.
+Each application's package has its handbook (KWhatsApp has none).
 
 On Fedora kdm is a sub-package of its own, so that installing the desktop
 for a session started from GDM/SDDM does not install a second display
@@ -182,7 +185,8 @@ of KMail (indexlib) and with logind support (GIO: KMail disconnects
 before the machine sleeps).  KMail's reader shows messages with
 kde3-wpepart's part in its mail mode (WebKit is the default engine) and
 falls back to KHTML without it: kde3-wpepart is an optional dependency
-(Fedora: Recommends).
+(Fedora: Recommends).  KMail's new-mail notification is a KBalloon:
+kde3-kdepim requires kde3-kdelibs 3.5.10+git20261124 or later.
 
 kde3-apps is the source tree of the applications of kdeutils and
 kdegraphics (kde3-revival/kde3-apps, which replaces the kde3-kdeutils and
@@ -196,8 +200,15 @@ replaces (Fedora: obsoletes) kde3-kdeutils and kde3-kdegraphics, so an
 upgrade installs every application they had; each application's package
 conflicts with the old package that held its files.  The applications
 need no more than kdelibs (and GMP for KCalc, libXext for KSnapshot, GIO
-for kbluetooth, which needs BlueZ's bluetoothd at run time; KWeather's
-applet runs in kdebase's kicker, an optional dependency / Recommends).
+for kbluetooth, which needs BlueZ's bluetoothd at run time, poppler-glib
+and cairo for KPDF; KWeather's applet runs in kdebase's kicker, an
+optional dependency / Recommends).  KWhatsApp loads kde3-wpepart's part
+in its app mode and shows its notifications in a KBalloon: it requires
+kde3-wpepart 0.1.0+git20261124 and kde3-kdelibs 3.5.10+git20261124 or
+later (the system tray of kde3-kdebase's kicker is optional /
+Recommends).  Its icon is WhatsApp's glyph, a trademark of WhatsApp;
+KWhatsApp is not made or endorsed by WhatsApp (the note,
+`kwhatsapp/ICONS`, is installed with its licence files).
 The image formats KView reads and KSnapshot writes are those of kde3-qt
 and of kdelibs' kimgio plugins.  KWin's screenshot shortcuts (Print,
 Shift+Print, Alt+Print) run KSnapshot (kde3-kdebase: an optional
@@ -261,4 +272,4 @@ there when the container has no user namespaces for bubblewrap.
 |--------------------|---------------------|----------|
 | (wpewebkit, repo)  | wpewebkit           | libWPEWebKit-2.0, WPE{Web,Network,GPU}Process, injected bundle, inspector resources |
 |                    | wpewebkit-devel     | headers, .so link, pkg-config files wpe-webkit-2.0, wpe-platform(-drm/-headless/-wayland)-2.0, wpe-web-process-extension-2.0 |
-| kde3-wpepart       | kde3-wpepart        | libkwpepart (KPart, preferred over KHTML for text/html; mail mode for KMail), its service and XML GUI file, kwpeview, kwpe-filterconv |
+| kde3-wpepart       | kde3-wpepart        | libkwpepart (KPart, preferred over KHTML for text/html; mail mode for KMail, app mode for KWhatsApp), its service and XML GUI files (kwpepart.rc, kwpeapppart.rc), kwpeview, kwpe-filterconv |
