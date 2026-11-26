@@ -30,7 +30,7 @@
 # KWhatsApp needs KBalloon (kdelibs) and the app mode of kde3-wpepart's
 # part, both since these snapshots.
 %global kdelibs_balloon 3.5.10+git20261124
-%global wpepart_appmode 0.1.0+git20261124
+%global wpepart_appmode 0.1.0+git20261125
 
 Name:           kde3-apps
 Version:        3.5.10+git%{date}
@@ -415,6 +415,8 @@ cmp -s all.list split.list || { echo "file lists differ from the installation:" 
 %changelog
 * Thu Nov 26 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261125-1
 - Snapshot of kde3-revival/kde3-apps commit b058d95
+- kde3-kwhatsapp requires kde3-wpepart >= 0.1.0+git20261125: the app
+  mode's notifications= and user agent without WebKit's site quirks
 
 * Wed Nov 25 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261124-1
 - Snapshot of kde3-revival/kde3-apps commit aee89c0

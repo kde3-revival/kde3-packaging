@@ -26,7 +26,7 @@ pkgrel=1
 # KBalloon is in kdelibs, KWPEPart's app mode in kde3-wpepart, since
 # these snapshots (KWhatsApp)
 _kdelibs_balloon=3.5.10+git20261124
-_wpepart_appmode=0.1.0+git20261124
+_wpepart_appmode=0.1.0+git20261125
 pkgdesc='KDE 3.5 applications (Ark, KCalc, KView, KPDF, KSnapshot, KWeather, ...) maintained for kde3-revival'
 arch=(x86_64)
 url='https://github.com/kde3-revival/kde3-apps'

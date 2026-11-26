@@ -91,11 +91,11 @@ grep -q 'KBalloon' <<<"$(nm -D --undefined-only /opt/kde3/bin/kwhatsapp | c++fil
     fail "kwhatsapp does not use KBalloon"
 if command -v pacman >/dev/null; then
     deps=$(pacman -Qi kde3-kwhatsapp | sed -n 's/^Depends On *: //p')
-    [[ " $deps " == *" kde3-wpepart>=0.1.0+git20261124 "* ]] || fail "kde3-kwhatsapp: $deps"
+    [[ " $deps " == *" kde3-wpepart>=0.1.0+git20261125 "* ]] || fail "kde3-kwhatsapp: $deps"
     [[ " $deps " == *" kde3-kdelibs>=3.5.10+git20261124 "* ]] || fail "kde3-kwhatsapp: $deps"
 else
     requires=$(rpm -q --requires kde3-kwhatsapp)
-    grep -q '^kde3-wpepart(x86-64) >= 0.1.0+git20261124' <<<"$requires" || { echo "$requires"; fail "kde3-kwhatsapp: kde3-wpepart"; }
+    grep -q '^kde3-wpepart(x86-64) >= 0.1.0+git20261125' <<<"$requires" || { echo "$requires"; fail "kde3-kwhatsapp: kde3-wpepart"; }
     grep -q '^kde3-kdelibs(x86-64) >= 3.5.10+git20261124' <<<"$requires" || { echo "$requires"; fail "kde3-kwhatsapp: kde3-kdelibs"; }
 fi
 echo ok
