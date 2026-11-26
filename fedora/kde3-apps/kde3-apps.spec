@@ -13,9 +13,9 @@
 # upgrade installs every application they had; each application's
 # package conflicts with the old package that held its files.
 
-%global commit     aee89c0e32172b3871e7fda6ce887bf1c461c63c
+%global commit     b058d95c1ab866c686aca0c908e57452373bb9e5
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global date       20261124
+%global date       20261125
 
 %global kde3dir    /opt/kde3
 # The first version of kde3-apps; kde3-kdeutils and kde3-kdegraphics older
@@ -413,6 +413,9 @@ cmp -s all.list split.list || { echo "file lists differ from the installation:" 
 %license COPYING kwhatsapp/ICONS
 
 %changelog
+* Thu Nov 26 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261125-1
+- Snapshot of kde3-revival/kde3-apps commit b058d95
+
 * Wed Nov 25 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261124-1
 - Snapshot of kde3-revival/kde3-apps commit aee89c0
 - New sub-packages kde3-kpdf (PDF viewer on poppler-glib; BuildRequires

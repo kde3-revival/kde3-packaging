@@ -14,9 +14,9 @@
 
 # the GitHub repository; its tarballs unpack to kde3-webpart-<commit>
 %global repo       kde3-webpart
-%global commit     d67f8404dda3f6e26b910dd956d0b8f29d552faf
+%global commit     01835146cab31874542ccc71f83d10b1c5d37ecb
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global date       20261124
+%global date       20261125
 
 %global kde3dir    /opt/kde3
 
@@ -102,6 +102,9 @@ done
 %doc README.md
 
 %changelog
+* Thu Nov 26 2026 Serghei Amelian <serghei.amelian@gmail.com> - 0.1.0+git20261125-1
+- Snapshot of kde3-revival/kde3-webpart commit 0183514
+
 * Wed Nov 25 2026 Serghei Amelian <serghei.amelian@gmail.com> - 0.1.0+git20261124-1
 - Snapshot of kde3-revival/kde3-webpart commit d67f840
 - Repository renamed kde3-webpart; the app mode's XML GUI file kwpeapppart.rc
