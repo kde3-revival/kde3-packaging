@@ -14,9 +14,9 @@
 
 # the GitHub repository; its tarballs unpack to kde3-webpart-<commit>
 %global repo       kde3-webpart
-%global commit     01835146cab31874542ccc71f83d10b1c5d37ecb
+%global commit     db00b7f41f044ac0e3f7e054bf9e40dce223f808
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global date       20261125
+%global date       20261126
 
 %global kde3dir    /opt/kde3
 
@@ -102,6 +102,9 @@ done
 %doc README.md
 
 %changelog
+* Thu Nov 26 2026 Serghei Amelian <serghei.amelian@gmail.com> - 0.1.0+git20261126-1
+- Snapshot of kde3-revival/kde3-webpart commit db00b7f
+
 * Thu Nov 26 2026 Serghei Amelian <serghei.amelian@gmail.com> - 0.1.0+git20261125-1
 - Snapshot of kde3-revival/kde3-webpart commit 0183514
 

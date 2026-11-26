@@ -8,9 +8,9 @@
 
 # the GitHub repository; its tarballs unpack to kde3-libs-<commit>
 %global repo       kde3-libs
-%global commit     40f55670ae0fe6b501266c08351872a373caf336
+%global commit     35a62d3c9db792f629caf8d498e42c27e5cec452
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global date       20261124
+%global date       20261126
 
 %global kde3dir    /opt/kde3
 %global qtdir      /opt/kde3-qt
@@ -216,6 +216,9 @@ sed -i 's|^\(.*\)$|"\1"|' devel.list
 %{_libdir}/cmake/KDE3Libs
 
 %changelog
+* Thu Nov 26 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261126-1
+- Snapshot of kde3-revival/kde3-libs commit 35a62d3
+
 * Wed Nov 25 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261124-1
 - Snapshot of kde3-revival/kde3-libs commit 40f5567
 - Repository renamed kde3-libs; README is README.md; new header kballoon.h

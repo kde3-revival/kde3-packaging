@@ -13,8 +13,8 @@
 pkgname=kde3-wpepart
 # the GitHub repository; its tarballs unpack to kde3-webpart-<commit>
 _repo=kde3-webpart
-_commit=01835146cab31874542ccc71f83d10b1c5d37ecb
-_date=20261125
+_commit=db00b7f41f044ac0e3f7e054bf9e40dce223f808
+_date=20261126
 pkgver=0.1.0+git${_date}
 pkgrel=1
 pkgdesc='WPE WebKit browser part for Konqueror, maintained for kde3-revival'
@@ -29,7 +29,7 @@ depends=(kde3-kdelibs kde3-qt wpewebkit glib2 glibc gumbo-parser libdrm libgcc
 makedepends=(cmake ninja)
 optdepends=('kde3-kdebase: Konqueror, the browser the part is made for')
 source=("kde3-wpepart-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz")
-sha256sums=('771d98a9a5ff7a6dc85d135f4f5a432707c8b146bec7df01d263fa882c3d1bc6')
+sha256sums=('e6c2308e0a136aaea80728ec9cba72dd24d9b662dc33ff76c5c48f1015ab16e3')
 
 _prefix=/opt/kde3
 

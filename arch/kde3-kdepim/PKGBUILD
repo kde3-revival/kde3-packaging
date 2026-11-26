@@ -11,8 +11,8 @@
 pkgname=kde3-kdepim
 # the GitHub repository; its tarballs unpack to kde3-pim-<commit>
 _repo=kde3-pim
-_commit=343793564621c7ac39ad977325f57f77aa43b096
-_date=20261125
+_commit=b9a81785c6af3c8363150880b59235e86d2a2c20
+_date=20261126
 pkgver=3.5.10+git${_date}
 pkgrel=1
 pkgdesc='KDE 3.5 PIM suite (KMail, KOrganizer, KAddressBook, Kontact, Kleopatra) maintained for kde3-revival'
@@ -36,7 +36,7 @@ optdepends=('kde3-wpepart>=0.1.0+git20261123: KMail reader with WPE WebKit (else
             'spamassassin: spam filtering (KMail anti-spam wizard)'
             'clamav: virus filtering (KMail anti-virus wizard)')
 source=("kde3-kdepim-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz")
-sha256sums=('e11472635b52819fd92d72631a6781e93228c095a41a4dacd52fc2e487e1bafc')
+sha256sums=('13bd8a8c66e59cd28c96a73293936f1f11a09b9242bfc396d54adfe88242c835')
 
 _prefix=/opt/kde3
 

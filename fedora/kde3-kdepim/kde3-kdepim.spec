@@ -8,9 +8,9 @@
 
 # the GitHub repository; its tarballs unpack to kde3-pim-<commit>
 %global repo       kde3-pim
-%global commit     343793564621c7ac39ad977325f57f77aa43b096
+%global commit     b9a81785c6af3c8363150880b59235e86d2a2c20
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global date       20261125
+%global date       20261126
 
 %global kde3dir    /opt/kde3
 
@@ -166,6 +166,9 @@ sort -o devel.list devel.list
 %files devel -f devel.list
 
 %changelog
+* Thu Nov 26 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261126-1
+- Snapshot of kde3-revival/kde3-pim commit b9a8178
+
 * Wed Nov 25 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261125-1
 - Snapshot of kde3-revival/kde3-pim commit 3437935
 - Repository renamed kde3-pim; README is README.md; requires kde3-kdelibs
