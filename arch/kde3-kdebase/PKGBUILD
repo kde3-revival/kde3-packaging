@@ -11,10 +11,10 @@
 pkgname=kde3-kdebase
 # the GitHub repository; its tarballs unpack to kde3-base-<commit>
 _repo=kde3-base
-_commit=aae9801fe67ee6f0e3d6a23ce74ae5027ed21472
+_commit=b872db262c683795a3f3ba45d423554f665a80d3
 _date=20261128
 pkgver=3.5.10+git${_date}
-pkgrel=1
+pkgrel=2
 pkgdesc='KDE 3.5 desktop (kwin, kicker, kdesktop, konqueror, konsole, kcontrol, kdm, ...) maintained for kde3-revival'
 arch=(x86_64)
 url='https://github.com/kde3-revival/kde3-base'
@@ -65,7 +65,7 @@ source=("kde3-kdebase-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz"
         kde3-np.pam
         kde3.desktop
         kde3-kdm.service)
-sha256sums=('01e541b1b0cd8c0cdeffc040302d9c761d46f3eafeb6ff744c9f4a8021b9a6ea'
+sha256sums=('fc1c3ab07ddf252933fed38704ebddfa890c39928d1a379ab755ccee359d378e'
             '6553fec18adaadec5e3e8a9c5f1c1640a0a029caa0b3d19a7c9448214848d4ce'
             '971b0fa0177567ccd0864b0832f4f06b7f9d6813db8aa9054c8a5821f108f5cf'
             'f0150f739ff3d1550decc7279bb4da8fab94b2d609aadecaf87422e64301086f'

@@ -8,7 +8,7 @@
 
 # the GitHub repository; its tarballs unpack to kde3-base-<commit>
 %global repo       kde3-base
-%global commit     aae9801fe67ee6f0e3d6a23ce74ae5027ed21472
+%global commit     b872db262c683795a3f3ba45d423554f665a80d3
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 %global date       20261128
 
@@ -16,7 +16,7 @@
 
 Name:           kde3-kdebase
 Version:        3.5.10+git%{date}
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        KDE 3.5 desktop maintained for kde3-revival
 
 License:        GPL-2.0-or-later AND LGPL-2.0-or-later AND GFDL-1.2-or-later
@@ -314,6 +314,9 @@ sort -o devel.list devel.list
 %{_unitdir}/kde3-kdm.service
 
 %changelog
+* Sat Nov 28 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261128-2
+- Snapshot of kde3-revival/kde3-base commit b872db2
+
 * Sat Nov 28 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261128-1
 - Snapshot of kde3-revival/kde3-base commit aae9801
 
