@@ -8,7 +8,7 @@
 
 # the GitHub repository; its tarballs unpack to kde3-base-<commit>
 %global repo       kde3-base
-%global commit     cad5e683913b673ae72f74e5bd1ef700ff03200c
+%global commit     4780b2099a8ff85e31d7675674f086cf5008eb5e
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 %global date       20261128
 
@@ -16,7 +16,7 @@
 
 Name:           kde3-kdebase
 Version:        3.5.10+git%{date}
-Release:        4%{?dist}
+Release:        6%{?dist}
 Summary:        KDE 3.5 desktop maintained for kde3-revival
 
 License:        GPL-2.0-or-later AND LGPL-2.0-or-later AND GFDL-1.2-or-later
@@ -30,7 +30,7 @@ Source4:        kde3-kdm.service
 BuildRequires:  cmake
 BuildRequires:  ninja-build
 BuildRequires:  gcc-c++
-BuildRequires:  kde3-kdelibs-devel
+BuildRequires:  kde3-kdelibs-devel >= 3.5.10+git20261128-2
 BuildRequires:  perl-interpreter
 BuildRequires:  bdftopcf
 BuildRequires:  mkfontscale
@@ -87,7 +87,7 @@ BuildRequires:  pkgconfig(xshmfence)
 BuildRequires:  pkgconfig(xpresent)
 BuildRequires:  pkgconfig(xi)
 
-Requires:       kde3-kdelibs%{?_isa}
+Requires:       kde3-kdelibs%{?_isa} >= 3.5.10+git20261128-2
 # The media manager lists, mounts and ejects the storage devices through
 # UDisks2; the power applet of kicker asks UPower.
 Requires:       udisks2
@@ -102,6 +102,9 @@ Recommends:     nm-connection-editor
 # applications also keep their passwords in (libsecret).
 Recommends:     xdg-desktop-portal-gtk
 Recommends:     gnome-keyring
+# pam_gnome_keyring of the PAM service kde3 (kdm): the login keyring opens
+# with the login password; without it every new keyring asks for one.
+Recommends:     gnome-keyring-pam
 # startkde gives the session a dconf (GSettings) database of its own, which
 # kded_xsettings fills with KDE's fonts and colours for GTK and libadwaita.
 Recommends:     dconf
@@ -314,6 +317,13 @@ sort -o devel.list devel.list
 %{_unitdir}/kde3-kdm.service
 
 %changelog
+* Sat Nov 28 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261128-6
+- Snapshot of kde3-revival/kde3-base commit 4780b20: kdesu's dialog asks the
+  administrators (wheel) for their own password (sudo); requires kde3-kdelibs
+  3.5.10+git20261128-2 (SuProcess::superUserCommandName)
+- Recommends gnome-keyring-pam: the login keyring opens with the login
+  password of kdm (pam_gnome_keyring of the PAM service kde3)
+
 * Sat Nov 28 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261128-4
 - Snapshot of kde3-revival/kde3-base commit cad5e68: startkde keeps the settings
   in ~/.kde3 (or in an older ~/.kde as long as there is no ~/.kde3)

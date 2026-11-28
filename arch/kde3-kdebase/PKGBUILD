@@ -11,10 +11,10 @@
 pkgname=kde3-kdebase
 # the GitHub repository; its tarballs unpack to kde3-base-<commit>
 _repo=kde3-base
-_commit=cad5e683913b673ae72f74e5bd1ef700ff03200c
+_commit=4780b2099a8ff85e31d7675674f086cf5008eb5e
 _date=20261128
 pkgver=3.5.10+git${_date}
-pkgrel=5
+pkgrel=6
 pkgdesc='KDE 3.5 desktop (kwin, kicker, kdesktop, konqueror, konsole, kcontrol, kdm, ...) maintained for kde3-revival'
 arch=(x86_64)
 url='https://github.com/kde3-revival/kde3-base'
@@ -32,7 +32,7 @@ license=('GPL-2.0-or-later AND LGPL-2.0-or-later AND GFDL-1.2-or-later')
 # libxpresent for tear-free frames, libxi (XInput 2.3) for the overview's
 # Super key and hot corner barrier and for the touchpad settings
 # (kded_touchpad).
-depends=(kde3-kdelibs kde3-qt avahi fontconfig freetype2 glib2
+depends=('kde3-kdelibs>=3.5.10+git20261128-2' kde3-qt avahi fontconfig freetype2 glib2
          glibc glu libgcc libgl libglvnd libice libldap libnm libpulse
          libsasl libsm libstdc++ libusb-compat libx11 libxau libxcb
          libxcomposite libxcursor libxdamage libxdmcp libxext libxfixes libxft
@@ -65,7 +65,7 @@ source=("kde3-kdebase-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz"
         kde3-np.pam
         kde3.desktop
         kde3-kdm.service)
-sha256sums=('7fdd560465005036b03438ec2574529e64a85de60e10f433431732218b299966'
+sha256sums=('dbfd17ff9859742999ace08aad9e80aac9a4f740bd288cb69e3aae6e6c617929'
             '6553fec18adaadec5e3e8a9c5f1c1640a0a029caa0b3d19a7c9448214848d4ce'
             '971b0fa0177567ccd0864b0832f4f06b7f9d6813db8aa9054c8a5821f108f5cf'
             'f0150f739ff3d1550decc7279bb4da8fab94b2d609aadecaf87422e64301086f'

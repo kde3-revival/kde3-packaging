@@ -8,7 +8,7 @@
 
 # the GitHub repository; its tarballs unpack to kde3-libs-<commit>
 %global repo       kde3-libs
-%global commit     bd00825d41f0b68c8fff752b5afb2d4abe9dbaf2
+%global commit     b3af07572bd9d79cdc0c372f336ea51e9eb80513
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 %global date       20261128
 
@@ -17,7 +17,7 @@
 
 Name:           kde3-kdelibs
 Version:        3.5.10+git%{date}
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        KDE 3.5 core libraries maintained for kde3-revival
 
 License:        LGPL-2.0-or-later AND GPL-2.0-or-later AND BSD-2-Clause AND GFDL-1.2-or-later
@@ -216,6 +216,10 @@ sed -i 's|^\(.*\)$|"\1"|' devel.list
 %{_libdir}/cmake/KDE3Libs
 
 %changelog
+* Sat Nov 28 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261128-2
+- Snapshot of kde3-revival/kde3-libs commit b3af075: kdesu runs sudo, with the
+  user's own password, for the administrators (wheel, sudo, admin)
+
 * Sat Nov 28 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261128-1
 - Snapshot of kde3-revival/kde3-libs commit bd00825: KDEHOME defaults to ~/.kde3
   (or to an older ~/.kde as long as there is no ~/.kde3)
