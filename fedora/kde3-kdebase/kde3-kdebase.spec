@@ -8,7 +8,7 @@
 
 # the GitHub repository; its tarballs unpack to kde3-base-<commit>
 %global repo       kde3-base
-%global commit     b872db262c683795a3f3ba45d423554f665a80d3
+%global commit     3af59d9cbf4c028a110223f9e3884afe30e890f9
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 %global date       20261128
 
@@ -16,7 +16,7 @@
 
 Name:           kde3-kdebase
 Version:        3.5.10+git%{date}
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        KDE 3.5 desktop maintained for kde3-revival
 
 License:        GPL-2.0-or-later AND LGPL-2.0-or-later AND GFDL-1.2-or-later
@@ -314,6 +314,12 @@ sort -o devel.list devel.list
 %{_unitdir}/kde3-kdm.service
 
 %changelog
+* Sat Nov 28 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261128-3
+- Snapshot of kde3-revival/kde3-base commit 3af59d9: kdm logins work again
+  (no setlogin() of glibc's stub), kdm lists the users of UID_MIN..UID_MAX
+  of /etc/login.defs, antialiased greeter fonts by default, tap-to-click and
+  the other touchpad settings also in the greeter
+
 * Sat Nov 28 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261128-2
 - Snapshot of kde3-revival/kde3-base commit b872db2
 
