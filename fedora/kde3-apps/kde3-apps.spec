@@ -13,9 +13,9 @@
 # upgrade installs every application they had; each application's
 # package conflicts with the old package that held its files.
 
-%global commit     b058d95c1ab866c686aca0c908e57452373bb9e5
+%global commit     e8b8408b616cf62a21c4d70f8fa23294faeacf0e
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global date       20261125
+%global date       20261127
 
 %global kde3dir    /opt/kde3
 # The first version of kde3-apps; kde3-kdeutils and kde3-kdegraphics older
@@ -324,7 +324,7 @@ for f in bin/ark bin/kcalc bin/kcharselect bin/kdf bin/kwikdisk bin/khexedit \
          bin/kweatherservice lib/kde3/weather_panelapplet.so lib/kde3/kcm_weather.so \
          bin/kbluetooth share/autostart/kbluetooth.desktop \
          bin/kpdf lib/kde3/libkpdfpart.so share/config.kcfg/kpdf.kcfg \
-         bin/kwhatsapp share/applications/kde/kwhatsapp.desktop \
+         bin/kwhatsapp share/applications/kde/kwhatsapp.desktop share/autostart/kwhatsapp.desktop \
          share/apps/kwhatsapp/kwhatsappui.rc share/apps/kwhatsapp/eventsrc \
          share/icons/hicolor/scalable/apps/kwhatsapp.svgz; do
     [ -e $root/$f ] || { echo "not built: $f" >&2; exit 1; }
@@ -413,6 +413,9 @@ cmp -s all.list split.list || { echo "file lists differ from the installation:" 
 %license COPYING kwhatsapp/ICONS
 
 %changelog
+* Sat Nov 28 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261127-1
+- Snapshot of kde3-revival/kde3-apps commit e8b8408
+
 * Thu Nov 26 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261125-1
 - Snapshot of kde3-revival/kde3-apps commit b058d95
 - kde3-kwhatsapp requires kde3-wpepart >= 0.1.0+git20261125: the app

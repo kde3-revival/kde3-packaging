@@ -8,9 +8,9 @@
 
 # the GitHub repository; its tarballs unpack to kde3-libs-<commit>
 %global repo       kde3-libs
-%global commit     35a62d3c9db792f629caf8d498e42c27e5cec452
+%global commit     5914801637d9cbb2599f044c9defa238b14e03e4
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global date       20261126
+%global date       20261127
 
 %global kde3dir    /opt/kde3
 %global qtdir      /opt/kde3-qt
@@ -216,6 +216,9 @@ sed -i 's|^\(.*\)$|"\1"|' devel.list
 %{_libdir}/cmake/KDE3Libs
 
 %changelog
+* Sat Nov 28 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261127-1
+- Snapshot of kde3-revival/kde3-libs commit 5914801
+
 * Thu Nov 26 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261126-1
 - Snapshot of kde3-revival/kde3-libs commit 35a62d3
 

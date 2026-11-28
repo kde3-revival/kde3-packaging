@@ -19,8 +19,8 @@ pkgbase=kde3-apps
 pkgname=(kde3-apps kde3-ark kde3-kcalc kde3-kcharselect kde3-kdf kde3-khexedit
          kde3-ktimer kde3-kwalletmanager kde3-kview kde3-kruler kde3-ksnapshot
          kde3-kweather kde3-kbluetooth kde3-kpdf kde3-kwhatsapp)
-_commit=b058d95c1ab866c686aca0c908e57452373bb9e5
-_date=20261125
+_commit=e8b8408b616cf62a21c4d70f8fa23294faeacf0e
+_date=20261127
 pkgver=3.5.10+git${_date}
 pkgrel=1
 # KBalloon is in kdelibs, KWPEPart's app mode in kde3-wpepart, since
@@ -39,7 +39,7 @@ makedepends=(bluez cairo cmake ninja "kde3-kdelibs>=${_kdelibs_balloon}" kde3-qt
              "kde3-wpepart>=${_wpepart_appmode}" glib2 gmp gzip libx11 libxext
              poppler-glib tar)
 source=("kde3-apps-${_commit}.tar.gz::${url}/archive/${_commit}.tar.gz")
-sha256sums=('dfab1e4586de274e560676327cd86bb1057c85b5ad97170eba3cb2bf818939ad')
+sha256sums=('3926e5e07393599d5f6b1ce1a49509e2d5ec1f3ae01c566e308a7363682f45cd')
 
 _prefix=/opt/kde3
 # kde3-kdeutils and kde3-kdegraphics older than that are replaced
@@ -262,7 +262,7 @@ package_kde3-kwhatsapp() {
            "kde3-wpepart>=${_wpepart_appmode}")
   # the tray icon (unread count) is shown in kicker's system tray
   optdepends=('kde3-kdebase: the system tray (kicker) for the tray icon')
-  local _files=(bin/kwhatsapp share/applications/kde/kwhatsapp.desktop
+  local _files=(bin/kwhatsapp share/applications/kde/kwhatsapp.desktop share/autostart/kwhatsapp.desktop
                 share/apps/kwhatsapp/kwhatsappui.rc share/apps/kwhatsapp/eventsrc
                 share/icons/hicolor/scalable/apps/kwhatsapp.svgz)
   _install kwhatsapp
