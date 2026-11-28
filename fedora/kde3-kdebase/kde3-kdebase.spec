@@ -8,7 +8,7 @@
 
 # the GitHub repository; its tarballs unpack to kde3-base-<commit>
 %global repo       kde3-base
-%global commit     3af59d9cbf4c028a110223f9e3884afe30e890f9
+%global commit     cad5e683913b673ae72f74e5bd1ef700ff03200c
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 %global date       20261128
 
@@ -16,7 +16,7 @@
 
 Name:           kde3-kdebase
 Version:        3.5.10+git%{date}
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        KDE 3.5 desktop maintained for kde3-revival
 
 License:        GPL-2.0-or-later AND LGPL-2.0-or-later AND GFDL-1.2-or-later
@@ -314,6 +314,10 @@ sort -o devel.list devel.list
 %{_unitdir}/kde3-kdm.service
 
 %changelog
+* Sat Nov 28 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261128-4
+- Snapshot of kde3-revival/kde3-base commit cad5e68: startkde keeps the settings
+  in ~/.kde3 (or in an older ~/.kde as long as there is no ~/.kde3)
+
 * Sat Nov 28 2026 Serghei Amelian <serghei.amelian@gmail.com> - 3.5.10+git20261128-3
 - Snapshot of kde3-revival/kde3-base commit 3af59d9: kdm logins work again
   (no setlogin() of glibc's stub), kdm lists the users of UID_MIN..UID_MAX
